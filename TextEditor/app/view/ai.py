@@ -5,7 +5,11 @@ from PyQt5.QtGui import QFont, QColor, QPalette
 from qfluentwidgets import (FluentIcon, PrimaryPushButton, PlainTextEdit,
                             TransparentToolButton)
 from collections import deque
+import os
+from dotenv import load_dotenv
 
+env_path = '/Users/richard/PyCharmMiscProject/CSP/.env'
+load_dotenv(env_path)
 
 class AiAssistantInterface(QWidget):
     def __init__(self, parent=None):
@@ -14,8 +18,8 @@ class AiAssistantInterface(QWidget):
         self.chat_history = deque(maxlen=6)  # Store last 6 messages (3 rounds)
         self.initUI()
         self.api_client = OpenAI(
-            api_key="sk-f992db0fe8974522bd5c71a2f985a7c3",
-            base_url="https://api.deepseek.com"
+            api_key=os.getenv("DEEPSEEK_API_KEY"),
+            base_url=os.getenv("BASE_URL"),
         )
 
     def initUI(self):

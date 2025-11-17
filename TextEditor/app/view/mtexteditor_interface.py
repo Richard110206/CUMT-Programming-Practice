@@ -7,7 +7,10 @@ from qfluentwidgets import CommandBar, Action, FluentIcon, TabBar, TransparentTo
     PrimaryDropDownPushButton, RoundMenu, MessageBox, SearchLineEdit, ComboBox
 from PyQt5.QtGui import QTextCursor, QFont, QColor, QFontDatabase
 import sys
+from dotenv import load_dotenv
 
+env_path = '/Users/richard/PyCharmMiscProject/CSP/.env'
+load_dotenv(env_path)
 
 class MultiTextEditorInterface(QWidget):
     def __init__(self, parent=None):
@@ -16,8 +19,8 @@ class MultiTextEditorInterface(QWidget):
         if sys.getdefaultencoding() != 'utf-8':
             pass
         self.api_client = OpenAI(
-            api_key="sk-f992db0fe8974522bd5c71a2f985a7c3", 
-            base_url="https://api.deepseek.com",
+            api_key=os.getenv("DEEPSEEK_API_KEY"),
+            base_url=os.getenv("BASE_URL"),
             default_headers={"Content-Type": "application/json; charset=utf-8"}
         )
         # 使用相对路径存储 JSON
