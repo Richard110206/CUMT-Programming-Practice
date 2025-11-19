@@ -291,7 +291,8 @@ class TextEditor(QTextEdit):
         
         if not has_selection:
             # 如果没有选中文本，将光标移动到当前单词
-            cursor.movePosition(QTextCursor.WordUnderCursor, QTextCursor.KeepAnchor)
+            cursor.movePosition(QTextCursor.StartOfWord, QTextCursor.MoveAnchor)
+            cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
         
         # 获取当前格式并切换粗体状态
         format_ = cursor.charFormat()
@@ -315,7 +316,8 @@ class TextEditor(QTextEdit):
         
         if not has_selection:
             # 如果没有选中文本，将光标移动到当前单词
-            cursor.movePosition(QTextCursor.WordUnderCursor, QTextCursor.KeepAnchor)
+            cursor.movePosition(QTextCursor.StartOfWord, QTextCursor.MoveAnchor)
+            cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
         
         # 获取当前格式并切换斜体状态
         format_ = cursor.charFormat()
