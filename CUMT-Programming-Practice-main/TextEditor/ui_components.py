@@ -85,6 +85,70 @@ class FontControlPanel(QWidget):
         return self.size_combo.currentText()
 
 
+class FormatControlPanel(QWidget):
+    """
+    格式控制面板组件
+    包含首行缩进等格式设置功能
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.init_ui()
+    
+    def init_ui(self):
+        """
+        初始化格式控制面板
+        """
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(5)
+        
+        # 添加首行缩进选项
+        indent_label = QLabel("首行缩进:", self)
+        layout.addWidget(indent_label)
+        
+        self.indent_combo = QComboBox(self)
+        self.indent_combo.addItems(["无缩进", "2字符", "4字符"])
+        self.indent_combo.setCurrentText("无缩进")
+        layout.addWidget(self.indent_combo)
+        
+        # 添加段落间距选项
+        spacing_label = QLabel("段落间距:", self)
+        layout.addWidget(spacing_label)
+        
+        self.spacing_combo = QComboBox(self)
+        self.spacing_combo.addItems(["单倍", "1.5倍", "双倍"])
+        self.spacing_combo.setCurrentText("单倍")
+        layout.addWidget(self.spacing_combo)
+
+
+class ModeControlPanel(QWidget):
+    """
+    模式控制面板组件
+    包含Markdown/Word模式切换功能
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.init_ui()
+    
+    def init_ui(self):
+        """
+        初始化模式控制面板
+        """
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(5)
+        
+        # 添加模式选择标签
+        mode_label = QLabel("编辑模式:", self)
+        layout.addWidget(mode_label)
+        
+        # 添加模式选择下拉框
+        self.mode_combo = QComboBox(self)
+        self.mode_combo.addItems(["普通模式", "Markdown模式", "Word模式"])
+        self.mode_combo.setCurrentText("普通模式")
+        layout.addWidget(self.mode_combo)
+
+
 class AlignmentControlPanel(QWidget):
     """
     对齐方式控制面板
@@ -184,6 +248,8 @@ class MainToolBar(QToolBar):
     def __init__(self, parent=None):
         super().__init__("工具栏", parent)
         self.font_panel = None
+        self.format_panel = None
+        self.mode_panel = None
         self.alignment_panel = None
         self.init_ui()
     
@@ -194,6 +260,20 @@ class MainToolBar(QToolBar):
         # 创建并添加字体控制面板
         self.font_panel = FontControlPanel(self)
         self.addWidget(self.font_panel)
+        
+        # 添加分隔线
+        self.addSeparator()
+        
+        # 创建并添加格式控制面板
+        self.format_panel = FormatControlPanel(self)
+        self.addWidget(self.format_panel)
+        
+        # 添加分隔线
+        self.addSeparator()
+        
+        # 创建并添加模式控制面板
+        self.mode_panel = ModeControlPanel(self)
+        self.addWidget(self.mode_panel)
         
         # 添加分隔线
         self.addSeparator()
@@ -213,6 +293,21 @@ class MainToolBar(QToolBar):
                 color_clicked_handler,
                 italic_clicked_handler
             )
+    
+    def connect_format_signals(self, indent_changed_handler, spacing_changed_handler):
+        """
+        连接格式控制相关信号
+        """
+        if self.format_panel:
+            self.format_panel.indent_combo.currentTextChanged.connect(indent_changed_handler)
+            self.format_panel.spacing_combo.currentTextChanged.connect(spacing_changed_handler)
+    
+    def connect_mode_signals(self, mode_changed_handler):
+        """
+        连接模式控制相关信号
+        """
+        if self.mode_panel:
+            self.mode_panel.mode_combo.currentTextChanged.connect(mode_changed_handler)
     
     def connect_alignment_signals(self, left_align_handler, center_align_handler, right_align_handler):
         """

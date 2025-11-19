@@ -7,7 +7,7 @@
 
 from PyQt5.QtWidgets import QTextEdit
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QColor, QTextCursor
+from PyQt5.QtGui import QFont, QColor, QTextCursor, QTextBlockFormat
 
 
 class TextEditor(QTextEdit):
@@ -28,6 +28,9 @@ class TextEditor(QTextEdit):
         self.setLineWrapMode(QTextEdit.WidgetWidth)
         # 支持撤销/重做功能
         self.setUndoRedoEnabled(True)
+        
+        # 初始化编辑模式
+        self.edit_mode = "普通模式"
         
     def set_text_font(self, font_family):
         """
@@ -109,6 +112,95 @@ class TextEditor(QTextEdit):
             # 如果没有选中内容，只应用到当前段落
             cursor.select(QTextCursor.BlockUnderCursor)
             cursor.setBlockFormat(block_format)
+    
+    def set_first_line_indent(self, indent_type):
+        """
+        设置首行缩进
+        :param indent_type: 缩进类型 ("无缩进", "2字符", "4字符")
+        """
+        cursor = self.textCursor()
+        block_format = cursor.blockFormat()
+        
+        # 根据选择设置缩进值
+        if indent_type == "2字符":
+            indent = 2 * self.fontMetrics().width(' ')
+        elif indent_type == "4字符":
+            indent = 4 * self.fontMetrics().width(' ')
+        else:
+            indent = 0
+            
+        block_format.setTextIndent(indent)
+        
+        # 如果有选中内容，应用到选中的所有段落
+        if cursor.hasSelection():
+            # 保存当前选择
+            selection_start = cursor.selectionStart()
+            selection_end = cursor.selectionEnd()
+            
+            # 移动到选择的开始位置
+            cursor.setPosition(selection_start)
+            cursor.movePosition(QTextCursor.StartOfBlock)
+            
+            # 逐个应用到每个段落
+            while cursor.position() < selection_end:
+                block_cursor = QTextCursor(cursor.block())
+                block_cursor.setBlockFormat(block_format)
+                
+                # 移动到下一段落
+                if not cursor.movePosition(QTextCursor.NextBlock):
+                    break
+        else:
+            # 如果没有选中内容，只应用到当前段落
+            cursor.select(QTextCursor.BlockUnderCursor)
+            cursor.setBlockFormat(block_format)
+    
+    def set_line_spacing(self, spacing_type):
+        """
+        设置行间距
+        :param spacing_type: 行间距类型 ("单倍", "1.5倍", "双倍")
+        """
+        cursor = self.textCursor()
+        block_format = cursor.blockFormat()
+        
+        # 根据选择设置行间距
+        if spacing_type == "1.5倍":
+            block_format.setLineHeight(1.5, QTextBlockFormat.ProportionalHeight)
+        elif spacing_type == "双倍":
+            block_format.setLineHeight(2.0, QTextBlockFormat.ProportionalHeight)
+        else:
+            block_format.setLineHeight(1.0, QTextBlockFormat.ProportionalHeight)
+            
+        # 如果有选中内容，应用到选中的所有段落
+        if cursor.hasSelection():
+            # 保存当前选择
+            selection_start = cursor.selectionStart()
+            selection_end = cursor.selectionEnd()
+            
+            # 移动到选择的开始位置
+            cursor.setPosition(selection_start)
+            cursor.movePosition(QTextCursor.StartOfBlock)
+            
+            # 逐个应用到每个段落
+            while cursor.position() < selection_end:
+                block_cursor = QTextCursor(cursor.block())
+                block_cursor.setBlockFormat(block_format)
+                
+                # 移动到下一段落
+                if not cursor.movePosition(QTextCursor.NextBlock):
+                    break
+        else:
+            # 如果没有选中内容，只应用到当前段落
+            cursor.select(QTextCursor.BlockUnderCursor)
+            cursor.setBlockFormat(block_format)
+    
+    def set_edit_mode(self, mode):
+        """
+        设置编辑模式
+        :param mode: 模式类型 ("普通模式", "Markdown模式", "Word模式")
+        """
+        self.edit_mode = mode
+        # 在这里可以添加不同模式的特殊处理逻辑
+        # 例如：Markdown模式可以添加语法高亮等
     
     def get_selected_text(self):
         """

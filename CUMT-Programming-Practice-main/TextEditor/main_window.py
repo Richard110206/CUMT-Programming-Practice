@@ -6,7 +6,8 @@
 """
 
 from PyQt5.QtWidgets import (QMainWindow, QAction, QFileDialog, QMessageBox, 
-                           QDockWidget, QStatusBar, QApplication, QColorDialog)
+                           QDockWidget, QStatusBar, QApplication, QColorDialog, 
+                           QTextEdit)
 from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtCore import Qt
 import sys
@@ -34,12 +35,17 @@ class MainWindow(QMainWindow):
         """
         # 设置窗口基本属性
         self.setWindowTitle("文本编辑器")
-        self.setGeometry(100, 100, 1000, 800)
+        self.setGeometry(100, 100, 1200, 800)
         
         # 创建核心组件
         self.text_editor = TextEditor(self)
         self.file_operations = FileOperations(self)
         self.deepseek_client = DeepSeekClient()
+        
+        # 创建AI结果展示区域
+        self.ai_result_display = QTextEdit(self)
+        self.ai_result_display.setReadOnly(True)
+        self.ai_result_display.setWindowTitle("AI结果展示")
         
         # 设置中心组件为文本编辑器
         self.setCentralWidget(self.text_editor)
@@ -50,6 +56,9 @@ class MainWindow(QMainWindow):
         
         # 创建DeepSeek控制面板
         self.create_deepseek_dock()
+        
+        # 创建AI结果展示面板
+        self.create_ai_result_dock()
         
         # 创建菜单栏
         self.create_menu_bar()
@@ -165,6 +174,20 @@ class MainWindow(QMainWindow):
         self.deepseek_dock.setFeatures(QDockWidget.DockWidgetMovable | 
                                      QDockWidget.DockWidgetFloatable)
     
+    def create_ai_result_dock(self):
+        """
+        创建AI结果展示的停靠窗口
+        """
+        self.ai_result_dock = QDockWidget("AI结果展示", self)
+        self.ai_result_dock.setWidget(self.ai_result_display)
+        
+        # 添加停靠窗口到主窗口右侧
+        self.addDockWidget(Qt.RightDockWidgetArea, self.ai_result_dock)
+        
+        # 设置停靠窗口可以移动和浮动
+        self.ai_result_dock.setFeatures(QDockWidget.DockWidgetMovable | 
+                                       QDockWidget.DockWidgetFloatable)
+    
     def connect_signals_and_slots(self):
         """
         连接信号和槽函数
@@ -173,7 +196,19 @@ class MainWindow(QMainWindow):
         self.toolbar.connect_font_signals(
             self.change_font,
             self.change_font_size,
-            self.change_text_color
+            self.change_text_color,
+            self.toggle_italic
+        )
+        
+        # 连接格式控制信号
+        self.toolbar.connect_format_signals(
+            self.change_first_line_indent,
+            self.change_line_spacing
+        )
+        
+        # 连接模式控制信号
+        self.toolbar.connect_mode_signals(
+            self.change_edit_mode
         )
         
         # 连接对齐方式信号
@@ -280,6 +315,28 @@ class MainWindow(QMainWindow):
         if color.isValid():
             self.text_editor.set_text_color(color)
     
+    def change_first_line_indent(self, indent_type):
+        """
+        改变首行缩进
+        :param indent_type: 缩进类型
+        """
+        self.text_editor.set_first_line_indent(indent_type)
+    
+    def change_line_spacing(self, spacing_type):
+        """
+        改变行间距
+        :param spacing_type: 行间距类型
+        """
+        self.text_editor.set_line_spacing(spacing_type)
+    
+    def change_edit_mode(self, mode):
+        """
+        改变编辑模式
+        :param mode: 编辑模式
+        """
+        self.text_editor.set_edit_mode(mode)
+        self.statusBar.showMessage(f"切换到{mode}")
+    
     def align_left(self):
         """
         左对齐
@@ -348,9 +405,8 @@ class MainWindow(QMainWindow):
             # 调用API
             result = self.deepseek_client.call_api(function_name, prompt)
             
-            # 将结果添加到文本编辑器中
-            self.text_editor.insertPlainText("\n\n--- AI生成结果 ---")
-            self.text_editor.insertPlainText("\n" + result)
+            # 将结果显示在AI结果展示区域而不是直接插入正文中
+            self.ai_result_display.setPlainText(result)
             self.statusBar.showMessage(f"{function_name}完成")
             
         except Exception as e:
