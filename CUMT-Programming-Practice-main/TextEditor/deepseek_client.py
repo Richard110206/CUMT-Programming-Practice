@@ -102,8 +102,8 @@ class DeepSeekClient:
         :return: 生成的prompt
         """
         if function_type == "文本续写":
-            return f"请续写以下文本：{text_content}"
+            return f"请续写以下文本，注意不要使用markdown文本输出，使用文档形式，同时续写内容不要多于50字：{text_content}"
         elif function_type == "文本总结":
-            return f"请总结以下文本：{text_content}"
+            return f"请总结以下文本，注意不要使用markdown文本输出，使用文档形式：{text_content}"
         else:
             return text_content

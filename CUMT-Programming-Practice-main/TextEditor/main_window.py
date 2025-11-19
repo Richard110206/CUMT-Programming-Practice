@@ -8,7 +8,7 @@
 from PyQt5.QtWidgets import (QMainWindow, QAction, QFileDialog, QMessageBox, 
                            QDockWidget, QStatusBar, QApplication, QColorDialog, 
                            QTextEdit)
-from PyQt5.QtGui import QIcon, QColor, QTextBlockFormat
+from PyQt5.QtGui import QIcon, QColor, QTextBlockFormat, QFont
 from PyQt5.QtCore import Qt
 import sys
 import os
@@ -28,6 +28,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.init_ui()
         self.current_file_path = None
+        self.current_theme = "light"  # 默认主题为浅色
     
     def init_ui(self):
         """
@@ -36,6 +37,9 @@ class MainWindow(QMainWindow):
         # 设置窗口基本属性
         self.setWindowTitle("文本编辑器")
         self.setGeometry(100, 100, 1200, 800)
+        
+        # 确保菜单栏在macOS上可见
+        self.menuBar().setNativeMenuBar(False)
         
         # 创建核心组件
         self.text_editor = TextEditor(self)
@@ -46,6 +50,11 @@ class MainWindow(QMainWindow):
         self.ai_result_display = QTextEdit(self)
         self.ai_result_display.setReadOnly(True)
         self.ai_result_display.setWindowTitle("AI结果展示")
+        
+        # 设置AI结果展示区域的字体大小为默认大小的1.5倍
+        ai_font = self.ai_result_display.font()
+        ai_font.setPointSize(int(ai_font.pointSize() * 1.5))
+        self.ai_result_display.setFont(ai_font)
         
         # 设置中心组件为文本编辑器
         self.setCentralWidget(self.text_editor)
@@ -162,6 +171,22 @@ class MainWindow(QMainWindow):
         italic_action.setShortcut("Ctrl+I")
         italic_action.triggered.connect(self.toggle_italic)
         edit_menu.addAction(italic_action)
+        
+        # 视图菜单
+        view_menu = menu_bar.addMenu("视图")
+        
+        # 主题切换子菜单
+        theme_menu = view_menu.addMenu("主题")
+        
+        # 浅色主题
+        light_theme_action = QAction("浅色", self)
+        light_theme_action.triggered.connect(lambda: self.set_theme("light"))
+        theme_menu.addAction(light_theme_action)
+        
+        # 深色主题
+        dark_theme_action = QAction("深色", self)
+        dark_theme_action.triggered.connect(lambda: self.set_theme("dark"))
+        theme_menu.addAction(dark_theme_action)
     
     def create_deepseek_dock(self):
         """
@@ -186,6 +211,11 @@ class MainWindow(QMainWindow):
         """
         self.ai_result_dock = QDockWidget("AI结果展示", self)
         self.ai_result_dock.setWidget(self.ai_result_display)
+        
+        # 设置停靠窗口标题字体大小
+        ai_dock_font = self.ai_result_dock.font()
+        ai_dock_font.setPointSize(int(ai_dock_font.pointSize() * 1.5))
+        self.ai_result_dock.setFont(ai_dock_font)
         
         # 添加停靠窗口到主窗口右侧
         self.addDockWidget(Qt.RightDockWidgetArea, self.ai_result_dock)
@@ -226,6 +256,7 @@ class MainWindow(QMainWindow):
         
         # 连接文本编辑器内容改变信号
         self.text_editor.textChanged.connect(self.on_text_changed)
+        self.text_editor.cursorPositionChanged.connect(self.on_cursor_position_changed)
     
     def new_file(self):
         """
@@ -431,6 +462,118 @@ class MainWindow(QMainWindow):
                 self.setWindowTitle(f"文本编辑器 - {self.current_file_path} *")
             else:
                 self.setWindowTitle("文本编辑器 *")
+    
+    def on_cursor_position_changed(self):
+        """
+        当光标位置改变时的处理函数
+        """
+        # 更新粗体和斜体按钮的状态
+        is_bold = self.text_editor.has_bold_format()
+        is_italic = self.text_editor.has_italic_format()
+        
+        # 阻止信号以避免递归
+        self.toolbar.font_panel.bold_button.blockSignals(True)
+        self.toolbar.font_panel.italic_button.blockSignals(True)
+        
+        # 更新粗体按钮状态
+        if self.toolbar.font_panel.bold_button.isChecked() != is_bold:
+            self.toolbar.font_panel.bold_button.setChecked(is_bold)
+        
+        # 更新斜体按钮状态
+        if self.toolbar.font_panel.italic_button.isChecked() != is_italic:
+            self.toolbar.font_panel.italic_button.setChecked(is_italic)
+        
+        # 恢复信号
+        self.toolbar.font_panel.bold_button.blockSignals(False)
+        self.toolbar.font_panel.italic_button.blockSignals(False)
+    
+    def set_theme(self, theme):
+        """
+        设置应用程序主题
+        :param theme: 主题名称 ("light" 或 "dark")
+        """
+        self.current_theme = theme
+        
+        if theme == "light":
+            # 浅色主题
+            self.setStyleSheet("""
+                QMainWindow, QWidget {
+                    background-color: white;
+                    color: black;
+                }
+                QMenuBar {
+                    background-color: #f0f0f0;
+                    color: black;
+                }
+                QMenuBar::item {
+                    background: transparent;
+                }
+                QMenuBar::item:selected {
+                    background: #d0d0d0;
+                }
+                QMenu {
+                    background-color: white;
+                    color: black;
+                }
+                QMenu::item:selected {
+                    background-color: #d0d0d0;
+                }
+                QToolBar {
+                    background-color: #f0f0f0;
+                    border: 1px solid #d0d0d0;
+                }
+                QDockWidget {
+                    background-color: white;
+                }
+                QDockWidget::title {
+                    background-color: #f0f0f0;
+                    color: black;
+                }
+            """)
+            # 更新DeepSeek面板背景为白色
+            self.deepseek_panel.setStyleSheet("background-color: white;")
+        else:
+            # 深色主题
+            self.setStyleSheet("""
+                QMainWindow, QWidget {
+                    background-color: #2b2b2b;
+                    color: #ffffff;
+                }
+                QMenuBar {
+                    background-color: #3c3f41;
+                    color: #ffffff;
+                }
+                QMenuBar::item {
+                    background: transparent;
+                }
+                QMenuBar::item:selected {
+                    background: #4b6eaf;
+                }
+                QMenu {
+                    background-color: #3c3f41;
+                    color: #ffffff;
+                }
+                QMenu::item:selected {
+                    background-color: #4b6eaf;
+                }
+                QToolBar {
+                    background-color: #3c3f41;
+                    border: 1px solid #555555;
+                }
+                QDockWidget {
+                    background-color: #2b2b2b;
+                }
+                QDockWidget::title {
+                    background-color: #3c3f41;
+                    color: #ffffff;
+                }
+                QTextEdit {
+                    background-color: #2b2b2b;
+                    color: #ffffff;
+                }
+            """)
+            # 更新DeepSeek面板背景为深色
+            self.deepseek_panel.setStyleSheet("background-color: #2b2b2b;")
     
     def closeEvent(self, event):
         """

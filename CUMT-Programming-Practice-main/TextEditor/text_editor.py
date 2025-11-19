@@ -18,9 +18,9 @@ class TextEditor(QTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         # 设置默认字体
-        # 使用系统默认字体族，只设置字号
+        # 使用系统默认字体族，设置字号为20
         default_font = QFont()
-        default_font.setPointSize(12)
+        default_font.setPointSize(20)
         self.setFont(default_font)
         # 设置Tab宽度为4个空格
         self.setTabStopWidth(4 * self.fontMetrics().width(' '))
@@ -40,6 +40,10 @@ class TextEditor(QTextEdit):
         # 应用到选中文本
         cursor = self.textCursor()
         if not cursor.hasSelection():
+            # 如果没有选中文本，设置后续输入文本的字体
+            format_ = cursor.charFormat()
+            format_.setFontFamily(font_family)
+            cursor.setCharFormat(format_)
             return
         format_ = cursor.charFormat()
         format_.setFontFamily(font_family)
@@ -55,6 +59,10 @@ class TextEditor(QTextEdit):
             # 应用到选中文本
             cursor = self.textCursor()
             if not cursor.hasSelection():
+                # 如果没有选中文本，设置后续输入文本的字号
+                format_ = cursor.charFormat()
+                format_.setFontPointSize(size_int)
+                cursor.setCharFormat(format_)
                 return
             format_ = cursor.charFormat()
             format_.setFontPointSize(size_int)
@@ -247,22 +255,54 @@ class TextEditor(QTextEdit):
         :return: 是否为空
         """
         return self.toPlainText().strip() == ""
-        
+    
+    def get_current_format(self):
+        """
+        获取当前光标位置的文本格式
+        :return: 字符格式对象
+        """
+        cursor = self.textCursor()
+        return cursor.charFormat()
+    
+    def has_bold_format(self):
+        """
+        检查当前光标位置是否为粗体格式
+        :return: 是否为粗体
+        """
+        char_format = self.get_current_format()
+        return char_format.fontWeight() == QFont.Bold
+    
+    def has_italic_format(self):
+        """
+        检查当前光标位置是否为斜体格式
+        :return: 是否为斜体
+        """
+        char_format = self.get_current_format()
+        return char_format.fontItalic()
+    
     def set_bold(self):
         """
         设置选中文字为粗体
         如果已选中文字是粗体，则取消粗体
         """
         cursor = self.textCursor()
-        if not cursor.hasSelection():
+        # 保存选择状态
+        has_selection = cursor.hasSelection()
+        
+        if not has_selection:
             # 如果没有选中文本，将光标移动到当前单词
             cursor.movePosition(QTextCursor.WordUnderCursor, QTextCursor.KeepAnchor)
         
+        # 获取当前格式并切换粗体状态
         format_ = cursor.charFormat()
-        # 切换粗体状态
-        format_.setFontWeight(900 if format_.fontWeight() != 900 else 50)  # 900是粗体，50是正常
+        is_bold = format_.fontWeight() == QFont.Bold
+        format_.setFontWeight(QFont.Normal if is_bold else QFont.Bold)
         cursor.setCharFormat(format_)
-        self.setTextCursor(cursor)
+        
+        # 如果原来没有选择文本，恢复光标位置
+        if not has_selection:
+            cursor.clearSelection()
+            self.setTextCursor(cursor)
     
     def set_italic(self):
         """
@@ -270,12 +310,20 @@ class TextEditor(QTextEdit):
         如果已选中文字是斜体，则取消斜体
         """
         cursor = self.textCursor()
-        if not cursor.hasSelection():
+        # 保存选择状态
+        has_selection = cursor.hasSelection()
+        
+        if not has_selection:
             # 如果没有选中文本，将光标移动到当前单词
             cursor.movePosition(QTextCursor.WordUnderCursor, QTextCursor.KeepAnchor)
         
+        # 获取当前格式并切换斜体状态
         format_ = cursor.charFormat()
-        # 切换斜体状态
-        format_.setFontItalic(not format_.fontItalic())
+        is_italic = format_.fontItalic()
+        format_.setFontItalic(not is_italic)
         cursor.setCharFormat(format_)
-        self.setTextCursor(cursor)
+        
+        # 如果原来没有选择文本，恢复光标位置
+        if not has_selection:
+            cursor.clearSelection()
+            self.setTextCursor(cursor)
