@@ -37,9 +37,6 @@ class TextEditor(QTextEdit):
         设置文本字体
         :param font_family: 字体名称
         """
-        current_font = self.font()
-        current_font.setFamily(font_family)
-        self.setFont(current_font)
         # 应用到选中文本
         cursor = self.textCursor()
         if not cursor.hasSelection():
@@ -55,9 +52,6 @@ class TextEditor(QTextEdit):
         """
         try:
             size_int = int(size)
-            current_font = self.font()
-            current_font.setPointSize(size_int)
-            self.setFont(current_font)
             # 应用到选中文本
             cursor = self.textCursor()
             if not cursor.hasSelection():
@@ -160,15 +154,15 @@ class TextEditor(QTextEdit):
         :param spacing_type: 行间距类型 ("单倍", "1.5倍", "双倍")
         """
         cursor = self.textCursor()
-        block_format = cursor.blockFormat()
+        block_format = QTextBlockFormat()
         
         # 根据选择设置行间距
         if spacing_type == "1.5倍":
-            block_format.setLineHeight(1.5, QTextBlockFormat.ProportionalHeight)
+            block_format.setLineHeight(150, QTextBlockFormat.ProportionalHeight)  # 150% 行高
         elif spacing_type == "双倍":
-            block_format.setLineHeight(2.0, QTextBlockFormat.ProportionalHeight)
+            block_format.setLineHeight(200, QTextBlockFormat.ProportionalHeight)  # 200% 行高
         else:
-            block_format.setLineHeight(1.0, QTextBlockFormat.ProportionalHeight)
+            block_format.setLineHeight(100, QTextBlockFormat.ProportionalHeight)  # 100% 行高 (单倍)
             
         # 如果有选中内容，应用到选中的所有段落
         if cursor.hasSelection():
@@ -181,16 +175,19 @@ class TextEditor(QTextEdit):
             cursor.movePosition(QTextCursor.StartOfBlock)
             
             # 逐个应用到每个段落
-            while cursor.position() < selection_end:
+            while cursor.position() <= selection_end:  # 修改为 <= 以确保包含最后一个段落
                 block_cursor = QTextCursor(cursor.block())
-                block_cursor.setBlockFormat(block_format)
+                block_cursor.mergeBlockFormat(block_format)
                 
-                # 移动到下一段落
+                # 如果无法移动到下一段落，则退出循环
                 if not cursor.movePosition(QTextCursor.NextBlock):
+                    break
+                
+                # 如果下一个段落的位置已经超出选择范围，则退出循环
+                if cursor.position() > selection_end:
                     break
         else:
             # 如果没有选中内容，只应用到当前段落
-            cursor.select(QTextCursor.BlockUnderCursor)
             cursor.setBlockFormat(block_format)
     
     def set_edit_mode(self, mode):
@@ -251,6 +248,22 @@ class TextEditor(QTextEdit):
         """
         return self.toPlainText().strip() == ""
         
+    def set_bold(self):
+        """
+        设置选中文字为粗体
+        如果已选中文字是粗体，则取消粗体
+        """
+        cursor = self.textCursor()
+        if not cursor.hasSelection():
+            # 如果没有选中文本，将光标移动到当前单词
+            cursor.movePosition(QTextCursor.WordUnderCursor, QTextCursor.KeepAnchor)
+        
+        format_ = cursor.charFormat()
+        # 切换粗体状态
+        format_.setFontWeight(900 if format_.fontWeight() != 900 else 50)  # 900是粗体，50是正常
+        cursor.setCharFormat(format_)
+        self.setTextCursor(cursor)
+    
     def set_italic(self):
         """
         设置选中文字为斜体
@@ -259,7 +272,7 @@ class TextEditor(QTextEdit):
         cursor = self.textCursor()
         if not cursor.hasSelection():
             # 如果没有选中文本，将光标移动到当前单词
-            cursor.movePosition(QTextCursor.WordUnderCursor, QTextCursor.SelectCurrentWord)
+            cursor.movePosition(QTextCursor.WordUnderCursor, QTextCursor.KeepAnchor)
         
         format_ = cursor.charFormat()
         # 切换斜体状态

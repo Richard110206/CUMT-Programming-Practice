@@ -50,16 +50,21 @@ class FontControlPanel(QWidget):
         self.color_button = QPushButton("颜色", self)
         layout.addWidget(self.color_button)
         
+        # 添加粗体按钮
+        self.bold_button = QPushButton("粗体", self)
+        layout.addWidget(self.bold_button)
+        
         # 添加斜体按钮
         self.italic_button = QPushButton("斜体", self)
         layout.addWidget(self.italic_button)
         
-    def connect_signals(self, font_changed_handler, size_changed_handler, color_clicked_handler, italic_clicked_handler=None):
+    def connect_signals(self, font_changed_handler, size_changed_handler, color_clicked_handler, bold_clicked_handler=None, italic_clicked_handler=None):
         """
         连接信号和槽函数
         :param font_changed_handler: 字体改变的处理函数
         :param size_changed_handler: 字号改变的处理函数
         :param color_clicked_handler: 颜色按钮点击的处理函数
+        :param bold_clicked_handler: 粗体按钮点击的处理函数
         :param italic_clicked_handler: 斜体按钮点击的处理函数
         """
         self.font_combo.currentFontChanged.connect(
@@ -67,6 +72,8 @@ class FontControlPanel(QWidget):
         )
         self.size_combo.currentTextChanged.connect(size_changed_handler)
         self.color_button.clicked.connect(color_clicked_handler)
+        if bold_clicked_handler:
+            self.bold_button.clicked.connect(bold_clicked_handler)
         if italic_clicked_handler:
             self.italic_button.clicked.connect(italic_clicked_handler)
     
@@ -121,32 +128,7 @@ class FormatControlPanel(QWidget):
         layout.addWidget(self.spacing_combo)
 
 
-class ModeControlPanel(QWidget):
-    """
-    模式控制面板组件
-    包含Markdown/Word模式切换功能
-    """
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.init_ui()
-    
-    def init_ui(self):
-        """
-        初始化模式控制面板
-        """
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(5)
-        
-        # 添加模式选择标签
-        mode_label = QLabel("编辑模式:", self)
-        layout.addWidget(mode_label)
-        
-        # 添加模式选择下拉框
-        self.mode_combo = QComboBox(self)
-        self.mode_combo.addItems(["普通模式", "Markdown模式", "Word模式"])
-        self.mode_combo.setCurrentText("普通模式")
-        layout.addWidget(self.mode_combo)
+
 
 
 class AlignmentControlPanel(QWidget):
@@ -271,18 +253,11 @@ class MainToolBar(QToolBar):
         # 添加分隔线
         self.addSeparator()
         
-        # 创建并添加模式控制面板
-        self.mode_panel = ModeControlPanel(self)
-        self.addWidget(self.mode_panel)
-        
-        # 添加分隔线
-        self.addSeparator()
-        
         # 创建并添加对齐控制面板
         self.alignment_panel = AlignmentControlPanel(self)
         self.addWidget(self.alignment_panel)
     
-    def connect_font_signals(self, font_changed_handler, size_changed_handler, color_clicked_handler, italic_clicked_handler=None):
+    def connect_font_signals(self, font_changed_handler, size_changed_handler, color_clicked_handler, bold_clicked_handler=None, italic_clicked_handler=None):
         """
         连接字体控制相关信号
         """
@@ -291,6 +266,7 @@ class MainToolBar(QToolBar):
                 font_changed_handler, 
                 size_changed_handler, 
                 color_clicked_handler,
+                bold_clicked_handler,
                 italic_clicked_handler
             )
     
@@ -306,8 +282,8 @@ class MainToolBar(QToolBar):
         """
         连接模式控制相关信号
         """
-        if self.mode_panel:
-            self.mode_panel.mode_combo.currentTextChanged.connect(mode_changed_handler)
+        # 模式控制面板已被移除，此方法为空
+        pass
     
     def connect_alignment_signals(self, left_align_handler, center_align_handler, right_align_handler):
         """

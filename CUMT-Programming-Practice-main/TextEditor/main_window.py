@@ -8,7 +8,7 @@
 from PyQt5.QtWidgets import (QMainWindow, QAction, QFileDialog, QMessageBox, 
                            QDockWidget, QStatusBar, QApplication, QColorDialog, 
                            QTextEdit)
-from PyQt5.QtGui import QIcon, QColor
+from PyQt5.QtGui import QIcon, QColor, QTextBlockFormat
 from PyQt5.QtCore import Qt
 import sys
 import os
@@ -151,6 +151,12 @@ class MainWindow(QMainWindow):
         # 添加分隔线
         edit_menu.addSeparator()
         
+        # 粗体动作
+        bold_action = QAction("粗体", self)
+        bold_action.setShortcut("Ctrl+B")
+        bold_action.triggered.connect(self.toggle_bold)
+        edit_menu.addAction(bold_action)
+        
         # 斜体动作
         italic_action = QAction("斜体", self)
         italic_action.setShortcut("Ctrl+I")
@@ -197,6 +203,7 @@ class MainWindow(QMainWindow):
             self.change_font,
             self.change_font_size,
             self.change_text_color,
+            self.toggle_bold,
             self.toggle_italic
         )
         
@@ -206,11 +213,7 @@ class MainWindow(QMainWindow):
             self.change_line_spacing
         )
         
-        # 连接模式控制信号
-        self.toolbar.connect_mode_signals(
-            self.change_edit_mode
-        )
-        
+
         # 连接对齐方式信号
         self.toolbar.connect_alignment_signals(
             self.align_left,
@@ -329,14 +332,7 @@ class MainWindow(QMainWindow):
         """
         self.text_editor.set_line_spacing(spacing_type)
     
-    def change_edit_mode(self, mode):
-        """
-        改变编辑模式
-        :param mode: 编辑模式
-        """
-        self.text_editor.set_edit_mode(mode)
-        self.statusBar.showMessage(f"切换到{mode}")
-    
+
     def align_left(self):
         """
         左对齐
@@ -413,6 +409,12 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "错误", f"DeepSeek API调用失败: {str(e)}")
             self.statusBar.showMessage("就绪")
             
+    def toggle_bold(self):
+        """
+        切换粗体状态
+        """
+        self.text_editor.set_bold()
+    
     def toggle_italic(self):
         """
         切换斜体状态
