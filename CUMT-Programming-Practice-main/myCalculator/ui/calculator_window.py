@@ -282,13 +282,14 @@ class CalculatorApp:
         self.notebook.add(num_frame, text="进制转换")
 
         # 输入框架
-        input_frame = ttk.LabelFrame(num_frame, text="输入")
-        input_frame.pack(fill=tk.X, padx=10, pady=10)
+        input_frame = ttk.LabelFrame(num_frame, text="🔢 输入数值")
+        input_frame.pack(fill=tk.X, padx=15, pady=15)
 
         # 设置大字体样式
         large_font = ("Arial", 14, "bold")
         entry_font = ("Arial", 16)
         result_font = ("Arial", 15)
+        label_font = ("Arial", 12, "bold")
 
         ttk.Label(input_frame, text="数值:", font=large_font).grid(row=0, column=0, sticky="w", padx=8, pady=10)
         self.num_input_var = tk.StringVar()
@@ -305,8 +306,8 @@ class CalculatorApp:
         convert_btn.grid(row=1, column=2, padx=15, pady=10)
 
         # 结果显示
-        result_frame = ttk.LabelFrame(num_frame, text="转换结果")
-        result_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        result_frame = ttk.LabelFrame(num_frame, text="📋 转换结果")
+        result_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
 
         # 增大结果显示的字体和间距
         result_labels = [
@@ -702,11 +703,10 @@ class CalculatorApp:
         # 框架样式 - 深色背景
         style.configure("TFrame", background="#2c3e50")
         style.configure("TLabelframe", background="#2c3e50", foreground="white")
-        style.configure("TLabelframe.Label", font=("Arial", 10, "bold"), foreground="white")
+        style.configure("TLabelframe.Label", font=("Arial", 13, "bold"), foreground="white", padding=[8, 6])
 
-        # 标签样式
-        style.configure("TLabel", background="#2c3e50", foreground="white", font=("Arial", 10))
-        style.configure("TLabelframe.Label", background="#2c3e50", foreground="white", font=("Arial", 11, "bold"))
+        # 标签样式 - 增大所有标签字体
+        style.configure("TLabel", background="#2c3e50", foreground="white", font=("Arial", 12))
 
         # 输入框样式 - 深色主题
         style.configure("TEntry",
