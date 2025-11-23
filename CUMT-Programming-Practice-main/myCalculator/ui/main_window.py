@@ -27,8 +27,8 @@ class CalculatorApp:
         """初始化应用程序"""
         self.root = tk.Tk()
         self.root.title("🧮 多功能计算器 - myCalculator")
-        # 修改为垂直长方形布局：窄一些，高一些
-        self.root.geometry("500x900")
+        # 修改为更合适的尺寸：减少高度，保持适中的宽度
+        self.root.geometry("520x750")
         self.root.resizable(True, True)
 
         # 设置窗口居中
@@ -85,9 +85,9 @@ class CalculatorApp:
         basic_frame = ttk.Frame(self.notebook)
         self.notebook.add(basic_frame, text="🧮 基础计算")
 
-        # 显示屏 - 美化样式
+        # 显示屏 - 美化样式，更紧凑
         display_frame = ttk.Frame(basic_frame)
-        display_frame.pack(fill=tk.X, padx=15, pady=(15, 10))
+        display_frame.pack(fill=tk.X, padx=12, pady=(12, 8))
 
         self.display_var = tk.StringVar(value="0")
         self.display = ttk.Label(
@@ -104,7 +104,7 @@ class CalculatorApp:
 
         # 按钮框架 - 更紧凑的布局
         button_frame = ttk.Frame(basic_frame)
-        button_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
+        button_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=(0, 12))
 
         # 重新设计的按钮布局 - 优化尺寸和间距
         buttons = [
@@ -133,7 +133,7 @@ class CalculatorApp:
                 width=8 if colspan == 1 else 17  # 根据列跨度设置宽度
             )
             btn.grid(row=row, column=col, rowspan=rowspan, columnspan=colspan,
-                    sticky="nsew", padx=3, pady=3)
+                    sticky="nsew", padx=2, pady=2)
 
         # 配置网格权重 - 更均匀的分布
         for i in range(6):
@@ -147,8 +147,8 @@ class CalculatorApp:
         self.notebook.add(math_frame, text="📊 数学函数")
 
         # 输入框和结果显示 - 更紧凑的布局
-        input_frame = ttk.LabelFrame(math_frame, text="输入与结果", padding=10)
-        input_frame.pack(fill=tk.X, padx=15, pady=(15, 10))
+        input_frame = ttk.LabelFrame(math_frame, text="输入与结果", padding=8)
+        input_frame.pack(fill=tk.X, padx=12, pady=(12, 8))
 
         ttk.Label(input_frame, text="主数值:").grid(row=0, column=0, sticky="w", padx=5, pady=3)
         self.math_input_var = tk.StringVar()
@@ -168,7 +168,7 @@ class CalculatorApp:
 
         # 数学函数按钮 - 分类组织
         functions_frame = ttk.Frame(math_frame)
-        functions_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
+        functions_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=(0, 12))
 
         # 基础运算
         basic_frame = ttk.LabelFrame(functions_frame, text="基础运算", padding=8)
@@ -482,11 +482,11 @@ class CalculatorApp:
         style.configure("Calculator.TButton", font=("Arial", 14, "bold"))
         style.configure("Display.TLabel", font=("Arial", 18, "bold"), background="white", foreground="black")
 
-        # 标签页样式
+        # 标签页样式 - 增大字体
         style.configure("TNotebook", background="#34495e", borderwidth=0)
         style.configure("TNotebook.Tab",
-                       padding=[12, 8],
-                       font=("Arial", 11, "bold"),
+                       padding=[16, 12],
+                       font=("Arial", 14, "bold"),
                        background="#95a5a6",
                        foreground="white")
         style.map("TNotebook.Tab",
