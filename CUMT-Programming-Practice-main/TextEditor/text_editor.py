@@ -17,20 +17,72 @@ class TextEditor(QTextEdit):
     """
     def __init__(self, parent=None):
         super().__init__(parent)
+
         # 设置默认字体
-        # 使用系统默认字体族，设置字号为20
         default_font = QFont()
-        default_font.setPointSize(20)
+        default_font.setPointSize(18)
+        default_font.setFamily("SimSun")
         self.setFont(default_font)
-        # 设置Tab宽度为4个空格
-        self.setTabStopWidth(4 * self.fontMetrics().width(' '))
+
+        # 设置Tab宽度为4个空格（兼容不同Qt版本）
+        metrics = self.fontMetrics()
+        space_width = (
+            metrics.horizontalAdvance(' ')
+            if hasattr(metrics, "horizontalAdvance")
+            else metrics.width(' ')
+        )
+        tab_distance = space_width * 4
+        if hasattr(self, "setTabStopDistance"):
+            self.setTabStopDistance(tab_distance)
+        else:
+            self.setTabStopWidth(tab_distance)
+
         # 支持自动换行
         self.setLineWrapMode(QTextEdit.WidgetWidth)
         # 支持撤销/重做功能
         self.setUndoRedoEnabled(True)
-        
+
+        # 提示文本
+        self.setPlaceholderText("开始创作吧... 支持富文本编辑与AI辅助，享受流畅的写作体验！")
+
         # 初始化编辑模式
         self.edit_mode = "普通模式"
+
+        # 设置现代化样式
+        self.setStyleSheet("""
+            QTextEdit {
+                background: white;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                padding: 20px;
+                font-size: 16px;
+                line-height: 1.8;
+                color: #212121;
+                selection-background-color: #bbdefb;
+                selection-color: #1565C0;
+            }
+            QTextEdit:focus {
+                border-color: #2196F3;
+            }
+            QScrollBar:vertical {
+                background: #f5f5f5;
+                width: 12px;
+                border-radius: 6px;
+                margin: 0;
+            }
+            QScrollBar::handle:vertical {
+                background: #bdbdbd;
+                border-radius: 6px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #9e9e9e;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                border: none;
+                background: none;
+            }
+        """)
         
     def set_text_font(self, font_family):
         """
@@ -77,8 +129,6 @@ class TextEditor(QTextEdit):
         """
         # 应用到选中文本
         cursor = self.textCursor()
-        if not cursor.hasSelection():
-            return
         format_ = cursor.charFormat()
         format_.setForeground(color)
         cursor.setCharFormat(format_)
