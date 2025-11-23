@@ -21,7 +21,8 @@ class TextEditor(QTextEdit):
         # 设置默认字体
         default_font = QFont()
         default_font.setPointSize(18)
-        default_font.setFamily("SimSun")
+        # 使用系统可用的字体，避免SimSun警告
+        default_font.setFamily("PingFang SC" if "PingFang SC" in [family.family() for family in QFont().families()] else "Helvetica")
         self.setFont(default_font)
 
         # 设置Tab宽度为4个空格（兼容不同Qt版本）
@@ -329,6 +330,14 @@ class TextEditor(QTextEdit):
         """
         char_format = self.get_current_format()
         return char_format.fontItalic()
+
+    def has_underline_format(self):
+        """
+        检查当前光标位置是否有下划线格式
+        :return: 是否有下划线
+        """
+        char_format = self.get_current_format()
+        return char_format.fontUnderline()
     
     def set_bold(self):
         """
@@ -374,7 +383,32 @@ class TextEditor(QTextEdit):
         is_italic = format_.fontItalic()
         format_.setFontItalic(not is_italic)
         cursor.setCharFormat(format_)
-        
+
+        # 如果原来没有选择文本，恢复光标位置
+        if not has_selection:
+            cursor.clearSelection()
+            self.setTextCursor(cursor)
+
+    def set_underline(self):
+        """
+        设置选中文字为下划线
+        如果已选中文字有下划线，则取消下划线
+        """
+        cursor = self.textCursor()
+        # 保存选择状态
+        has_selection = cursor.hasSelection()
+
+        if not has_selection:
+            # 如果没有选中文本，将光标移动到当前单词
+            cursor.movePosition(QTextCursor.StartOfWord, QTextCursor.MoveAnchor)
+            cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
+
+        # 获取当前格式并切换下划线状态
+        format_ = cursor.charFormat()
+        is_underline = format_.fontUnderline()
+        format_.setFontUnderline(not is_underline)
+        cursor.setCharFormat(format_)
+
         # 如果原来没有选择文本，恢复光标位置
         if not has_selection:
             cursor.clearSelection()
