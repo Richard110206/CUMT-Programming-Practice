@@ -222,10 +222,10 @@ class CalculatorApp:
         basic_frame.pack(fill=tk.X, pady=(0, 15))
 
         basic_functions = [
-            ("√ 平方根", lambda: self.calculate_math("sqrt")),
-            ("x^y 幂运算", lambda: self.calculate_math("power")),
-            ("% 取模运算", lambda: self.calculate_math("modulus")),
-            ("1/x 倒数", lambda: self.calculate_math("reciprocal"))
+            ("平方根", lambda: self.calculate_math("sqrt")),
+            ("幂运算", lambda: self.calculate_math("power")),
+            ("模运算", lambda: self.calculate_math("modulus")),
+            ("倒数", lambda: self.calculate_math("reciprocal"))
         ]
 
         for i, (text, command) in enumerate(basic_functions):
