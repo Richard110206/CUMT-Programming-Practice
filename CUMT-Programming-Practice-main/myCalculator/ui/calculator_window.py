@@ -187,26 +187,25 @@ class CalculatorApp:
         math_frame = ttk.Frame(self.notebook)
         self.notebook.add(math_frame, text="📊 数学函数")
 
-        # 统一设置字体样式
-        label_font = ("Arial", 12, "bold")
-        entry_font = ("Arial", 12)
-        button_font = ("Arial", 11)
+        # 设置字体样式
+        large_font = ("Arial", 14, "bold")
+        entry_font = ("Arial", 13)
 
         # 输入框和结果显示 - 使用更大的字体和间距
         input_frame = ttk.LabelFrame(math_frame, text="📝 输入参数与计算结果", padding=15)
         input_frame.pack(fill=tk.X, padx=15, pady=15)
 
-        ttk.Label(input_frame, text="主数值 X:", font=label_font).grid(row=0, column=0, sticky="w", padx=10, pady=12)
+        ttk.Label(input_frame, text="主数值 X:", font=large_font).grid(row=0, column=0, sticky="w", padx=10, pady=12)
         self.math_input_var = tk.StringVar()
         entry1 = ttk.Entry(input_frame, textvariable=self.math_input_var, width=20, font=entry_font)
         entry1.grid(row=0, column=1, padx=10, pady=12, sticky="ew")
 
-        ttk.Label(input_frame, text="第二数值 Y:", font=label_font).grid(row=0, column=2, sticky="w", padx=10, pady=12)
+        ttk.Label(input_frame, text="第二数值 Y:", font=large_font).grid(row=0, column=2, sticky="w", padx=10, pady=12)
         self.math_input2_var = tk.StringVar()
         entry2 = ttk.Entry(input_frame, textvariable=self.math_input2_var, width=20, font=entry_font)
         entry2.grid(row=0, column=3, padx=10, pady=12, sticky="ew")
 
-        ttk.Label(input_frame, text="计算结果:", font=label_font).grid(row=1, column=0, sticky="w", padx=10, pady=12)
+        ttk.Label(input_frame, text="计算结果:", font=large_font).grid(row=1, column=0, sticky="w", padx=10, pady=12)
         self.math_result_var = tk.StringVar()
         result_entry = ttk.Entry(input_frame, textvariable=self.math_result_var, width=50, state="readonly", font=entry_font)
         result_entry.grid(row=1, column=1, columnspan=3, padx=10, pady=12, sticky="ew")
@@ -231,7 +230,7 @@ class CalculatorApp:
 
         for i, (text, command) in enumerate(basic_functions):
             btn = ttk.Button(basic_frame, text=text, command=command, width=14,
-                           style="Number.TButton")
+                           style="MathNumber.TButton")
             btn.grid(row=i//2, column=i%2, sticky="ew", padx=8, pady=8)
 
         basic_frame.grid_columnconfigure(0, weight=1)
@@ -251,7 +250,7 @@ class CalculatorApp:
 
         for i, (text, command) in enumerate(advanced_functions):
             btn = ttk.Button(advanced_frame, text=text, command=command, width=14,
-                           style="Function.TButton")
+                           style="MathFunction.TButton")
             btn.grid(row=i//3, column=i%3, sticky="ew", padx=6, pady=8)
 
         for i in range(3):
@@ -271,7 +270,7 @@ class CalculatorApp:
 
         for i, (text, command) in enumerate(trig_functions):
             btn = ttk.Button(trig_frame, text=text, command=command, width=14,
-                           style="Operator.TButton")
+                           style="MathOperator.TButton")
             btn.grid(row=i//3, column=i%3, sticky="ew", padx=6, pady=8)
 
         for i in range(3):
@@ -689,6 +688,37 @@ class CalculatorApp:
                        padding=10)
         style.map("Equals.TButton",
                  background=[("active", "#c0392b"), ("pressed", "#a93226")])
+
+        # 数学函数专用按钮样式（13号字体）
+        style.configure("MathNumber.TButton",
+                       font=("Arial", 13, "bold"),
+                       foreground="white",
+                       background="#3498db",
+                       borderwidth=0,
+                       focuscolor="none",
+                       padding=8)
+        style.map("MathNumber.TButton",
+                 background=[("active", "#2980b9"), ("pressed", "#1e5f8e")])
+
+        style.configure("MathFunction.TButton",
+                       font=("Arial", 13, "bold"),
+                       foreground="white",
+                       background="#e67e22",
+                       borderwidth=0,
+                       focuscolor="none",
+                       padding=8)
+        style.map("MathFunction.TButton",
+                 background=[("active", "#d35400"), ("pressed", "#a04000")])
+
+        style.configure("MathOperator.TButton",
+                       font=("Arial", 13, "bold"),
+                       foreground="white",
+                       background="#27ae60",
+                       borderwidth=0,
+                       focuscolor="none",
+                       padding=8)
+        style.map("MathOperator.TButton",
+                 background=[("active", "#229954"), ("pressed", "#1e7e34")])
 
         # 默认计算器按钮样式（兼容旧代码）
         style.configure("Calculator.TButton", font=("Arial", 14, "bold"))
