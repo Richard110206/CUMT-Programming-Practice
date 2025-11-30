@@ -139,7 +139,7 @@ class CalculatorApp:
             relief="solid",
             padding=15,
             background="#1a1a1a",
-            foreground="#00ff41"
+            foreground="#4fc3f7"
         )
         self.display.pack(fill=tk.X)
 
@@ -187,25 +187,26 @@ class CalculatorApp:
         math_frame = ttk.Frame(self.notebook)
         self.notebook.add(math_frame, text="📊 数学函数")
 
-        # 设置字体样式
-        large_font = ("Arial", 14, "bold")
-        entry_font = ("Arial", 13)
+        # 统一设置字体样式
+        label_font = ("Arial", 12, "bold")
+        entry_font = ("Arial", 12)
+        button_font = ("Arial", 11)
 
         # 输入框和结果显示 - 使用更大的字体和间距
         input_frame = ttk.LabelFrame(math_frame, text="📝 输入参数与计算结果", padding=15)
         input_frame.pack(fill=tk.X, padx=15, pady=15)
 
-        ttk.Label(input_frame, text="主数值 X:", font=large_font).grid(row=0, column=0, sticky="w", padx=10, pady=12)
+        ttk.Label(input_frame, text="主数值 X:", font=label_font).grid(row=0, column=0, sticky="w", padx=10, pady=12)
         self.math_input_var = tk.StringVar()
         entry1 = ttk.Entry(input_frame, textvariable=self.math_input_var, width=20, font=entry_font)
         entry1.grid(row=0, column=1, padx=10, pady=12, sticky="ew")
 
-        ttk.Label(input_frame, text="第二数值 Y:", font=large_font).grid(row=0, column=2, sticky="w", padx=10, pady=12)
+        ttk.Label(input_frame, text="第二数值 Y:", font=label_font).grid(row=0, column=2, sticky="w", padx=10, pady=12)
         self.math_input2_var = tk.StringVar()
         entry2 = ttk.Entry(input_frame, textvariable=self.math_input2_var, width=20, font=entry_font)
         entry2.grid(row=0, column=3, padx=10, pady=12, sticky="ew")
 
-        ttk.Label(input_frame, text="计算结果:", font=large_font).grid(row=1, column=0, sticky="w", padx=10, pady=12)
+        ttk.Label(input_frame, text="计算结果:", font=label_font).grid(row=1, column=0, sticky="w", padx=10, pady=12)
         self.math_result_var = tk.StringVar()
         result_entry = ttk.Entry(input_frame, textvariable=self.math_result_var, width=50, state="readonly", font=entry_font)
         result_entry.grid(row=1, column=1, columnspan=3, padx=10, pady=12, sticky="ew")
@@ -338,7 +339,7 @@ class CalculatorApp:
         medium_font = ("Arial", 12)
         entry_font = ("Arial", 13)
         result_font = ("Arial", 13, "bold")
-        info_font = ("Arial", 11)
+        info_font = ("Arial", 13)
 
         # 单位映射
         unit_mapping = {
@@ -401,10 +402,13 @@ class CalculatorApp:
                            bg="#34495e", fg="white", relief="solid", borderwidth=1)
         info_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
+        # 设置居中对齐标签
+        info_text.tag_config("center", justify="center")
+
         # 获取并显示换算信息
         conversion_info = self.length_converter.get_conversion_info()
         for key, value in conversion_info.items():
-            info_text.insert(tk.END, f"📌 {key} = {value}\n")
+            info_text.insert(tk.END, f"📌 {key} = {value}\n", "center")
         info_text.config(state="disabled")
 
         # 存储单位映射供转换函数使用
@@ -644,7 +648,7 @@ class CalculatorApp:
 
         # 数字按钮样式 - 蓝色系
         style.configure("Number.TButton",
-                       font=("Arial", 14, "bold"),
+                       font=("Arial", 17, "bold"),
                        foreground="white",
                        background="#3498db",
                        borderwidth=0,
@@ -655,7 +659,7 @@ class CalculatorApp:
 
         # 功能按钮样式 - 橙色系
         style.configure("Function.TButton",
-                       font=("Arial", 12, "bold"),
+                       font=("Arial", 17, "bold"),
                        foreground="white",
                        background="#e67e22",
                        borderwidth=0,
@@ -666,7 +670,7 @@ class CalculatorApp:
 
         # 运算符按钮样式 - 绿色系
         style.configure("Operator.TButton",
-                       font=("Arial", 16, "bold"),
+                       font=("Arial", 17, "bold"),
                        foreground="white",
                        background="#27ae60",
                        borderwidth=0,
@@ -677,7 +681,7 @@ class CalculatorApp:
 
         # 等于按钮样式 - 红色系
         style.configure("Equals.TButton",
-                       font=("Arial", 16, "bold"),
+                       font=("Arial", 17, "bold"),
                        foreground="white",
                        background="#e74c3c",
                        borderwidth=0,
@@ -688,7 +692,7 @@ class CalculatorApp:
 
         # 默认计算器按钮样式（兼容旧代码）
         style.configure("Calculator.TButton", font=("Arial", 14, "bold"))
-        style.configure("Display.TLabel", font=("Arial", 18, "bold"), background="#1a1a1a", foreground="#00ff41")
+        style.configure("Display.TLabel", font=("Arial", 18, "bold"), background="#1a1a1a", foreground="#4fc3f7")
 
         # 标签页样式 - 增大字体
         style.configure("TNotebook", background="#34495e", borderwidth=0)
