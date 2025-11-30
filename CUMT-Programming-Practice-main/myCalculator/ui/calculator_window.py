@@ -742,10 +742,10 @@ class CalculatorApp:
         # 标签样式 - 增大所有标签字体
         style.configure("TLabel", background="#2c3e50", foreground="white", font=("Arial", 12))
 
-        # 输入框样式 - 深色主题
+        # 输入框样式 - 更亮背景主题
         style.configure("TEntry",
-                       fieldbackground="#34495e",
-                       foreground="white",
+                       fieldbackground="#f0f0f0",
+                       foreground="#2c3e50",
                        borderwidth=1,
                        font=("Arial", 11))
         style.map("TEntry",
