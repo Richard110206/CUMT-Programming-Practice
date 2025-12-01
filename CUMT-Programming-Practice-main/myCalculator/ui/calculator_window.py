@@ -512,7 +512,7 @@ class CalculatorApp:
         large_font = ("Arial", 14, "bold")
         medium_font = ("Arial", 12)
         entry_font = ("Arial", 13)
-        result_font = ("Arial", 11)
+        result_font = ("Arial", 12)
 
         # 输入框架 - 使用更大的间距
         input_frame = ttk.LabelFrame(loan_frame, text="🏦 贷款参数设置", padding=15)
@@ -578,7 +578,7 @@ class CalculatorApp:
         result_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
 
         # 创建文本框显示结果 - 使用更大的字体
-        self.loan_result_text = tk.Text(result_frame, height=18, width=90, font=result_font,
+        self.loan_result_text = tk.Text(result_frame, height=18, width=90, font=("Arial", 13),
                                        bg="#34495e", fg="white", relief="solid", borderwidth=1,
                                        padx=10, pady=10)
         scrollbar = ttk.Scrollbar(result_frame, orient="vertical", command=self.loan_result_text.yview)
