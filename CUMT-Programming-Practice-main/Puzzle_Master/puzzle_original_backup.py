@@ -2,12 +2,162 @@ import sys
 import random
 import json
 import os
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, 
-                             QLabel, QPushButton, QVBoxLayout, QHBoxLayout, 
-                             QWidget, QInputDialog, QMessageBox, QTableWidget, QTableWidgetItem,
-                             QGridLayout)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog,
+                             QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
+                             QWidget, QMessageBox, QTableWidget, QTableWidgetItem,
+                             QGridLayout, QDialog)
 from PyQt5.QtGui import QPixmap, QFont, QPalette, QBrush
 from PyQt5.QtCore import Qt, QTimer, QDate
+
+
+class DifficultySelectionWindow(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("选择难度")
+        self.setFixedSize(500, 450)
+        self.setModal(True)
+        self.selected_difficulty = None
+        self.init_ui()
+
+    def init_ui(self):
+        # 设置渐变背景
+        self.setStyleSheet("""
+            DifficultySelectionWindow {
+                background: qlineargradient(
+                    x1: 0, y1: 0, x2: 0, y2: 1,
+                    stop: 0 #4CAF50,
+                    stop: 0.5 #8BC34A,
+                    stop: 1 #CDDC39
+                );
+            }
+        """)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(30, 30, 30, 30)
+        main_layout.setSpacing(20)
+
+        # 标题
+        title_label = QLabel("🎮 选择游戏难度")
+        title_font = QFont("Arial", 24, QFont.Bold)
+        title_label.setFont(title_font)
+        title_label.setAlignment(Qt.AlignCenter)
+        title_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                background-color: rgba(0, 0, 0, 120);
+                padding: 15px;
+                border-radius: 15px;
+                margin-bottom: 10px;
+            }
+        """)
+        main_layout.addWidget(title_label)
+
+        # 说明文字
+        description = QLabel("选择你想要的拼图难度，数字越大挑战越高！")
+        description.setFont(QFont("Arial", 12))
+        description.setAlignment(Qt.AlignCenter)
+        description.setStyleSheet("""
+            QLabel {
+                color: white;
+                background-color: rgba(0, 0, 0, 80);
+                padding: 10px;
+                border-radius: 10px;
+                margin-bottom: 20px;
+            }
+        """)
+        main_layout.addWidget(description)
+
+        # 难度按钮布局
+        button_layout = QGridLayout()
+        button_layout.setSpacing(15)
+
+        # 难度选项配置
+        difficulty_options = [
+            {"size": 2, "name": "简单", "color": "#4CAF50", "emoji": "😊", "desc": "2×2 拼图"},
+            {"size": 3, "name": "普通", "color": "#2196F3", "emoji": "🎯", "desc": "3×3 拼图"},
+            {"size": 4, "name": "困难", "color": "#FF9800", "emoji": "💪", "desc": "4×4 拼图"},
+            {"size": 5, "name": "专家", "color": "#F44336", "emoji": "🔥", "desc": "5×5 拼图"},
+            {"size": 6, "name": "大师", "color": "#9C27B0", "emoji": "👑", "desc": "6×6 拼图"}
+        ]
+
+        self.difficulty_buttons = []
+        for i, option in enumerate(difficulty_options):
+            btn = QPushButton()
+            button_layout.addWidget(btn, i // 2, i % 2)
+
+            # 创建富文本按钮内容
+            btn_text = f"""
+            <div style="text-align: center; color: white; padding: 10px;">
+                <div style="font-size: 32px; margin-bottom: 5px;">{option['emoji']}</div>
+                <div style="font-size: 18px; font-weight: bold;">{option['name']}</div>
+                <div style="font-size: 14px; opacity: 0.9;">{option['desc']}</div>
+                <div style="font-size: 12px; opacity: 0.7; margin-top: 3px;">
+                    {"★" * option['size']}{"☆" * (6 - option['size'])}
+                </div>
+            </div>
+            """
+
+            btn.setText(btn_text)
+            btn.clicked.connect(lambda checked, size=option['size']: self.select_difficulty(size))
+
+            # 按钮样式
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {option['color']};
+                    border: 3px solid white;
+                    border-radius: 15px;
+                    padding: 15px;
+                    min-height: 100px;
+                    font-weight: bold;
+                }}
+                QPushButton:hover {{
+                    background-color: {option['color']};
+                    border: 4px solid yellow;
+                    font-weight: bold;
+                }}
+                QPushButton:pressed {{
+                    background-color: {option['color']};
+                    border: 2px solid white;
+                }}
+            """)
+
+            self.difficulty_buttons.append(btn)
+
+        main_layout.addLayout(button_layout)
+
+        # 底部按钮
+        bottom_layout = QHBoxLayout()
+
+        cancel_btn = QPushButton("取消")
+        cancel_btn.clicked.connect(self.reject)
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(255, 255, 255, 200);
+                border: 2px solid #333;
+                color: #333;
+                padding: 12px 30px;
+                text-align: center;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 10px;
+                min-width: 120px;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 255);
+                border-color: #000;
+            }
+        """)
+
+        bottom_layout.addStretch()
+        bottom_layout.addWidget(cancel_btn)
+        main_layout.addLayout(bottom_layout)
+
+    def select_difficulty(self, difficulty):
+        self.selected_difficulty = difficulty
+        self.accept()
+
+    def get_selected_difficulty(self):
+        return self.selected_difficulty
 
 
 class PuzzlePiece(QLabel):
@@ -60,12 +210,22 @@ class LeaderboardWindow(QMainWindow):
         super().__init__(parent)
         self.setWindowTitle("排行榜")
         self.resize(500, 400)
+        # 设置窗口整体背景色
+        self.setStyleSheet("background-color: #f0f0f0;")
         self.load_leaderboard()
         self.init_ui()
 
     def init_ui(self):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
+
+        # 设置中央窗口部件的背景色，确保没有黑色区域
+        central_widget.setStyleSheet("""
+            QWidget {
+                background-color: rgba(240, 240, 240, 0.95);
+                border-radius: 5px;
+            }
+        """)
 
         background_path = "background.jpg"
         if os.path.exists(background_path):
@@ -77,7 +237,7 @@ class LeaderboardWindow(QMainWindow):
             central_widget.setAutoFillBackground(True)
 
         main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(20, 20, 20, 20) 
+        main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(15) 
         
         title_label = QLabel("挑战模式排行榜")
@@ -99,11 +259,22 @@ QTableWidget {
                 border: 2px solid #4CAF50;
                 border-radius: 8px;
                 gridline-color: #ddd;
+                color: #333333;
+            }
+            QTableWidget::item {
+                background-color: rgba(255, 255, 255, 200);
+                color: #333333;
+                padding: 8px;
+                border-bottom: 1px solid #ddd;
+            }
+            QTableWidget::item:selected {
+                background-color: rgba(76, 175, 80, 150);
+                color: white;
             }
             QHeaderView::section {
             background-color: #4CAF50;
                 color: white;
-                padding: 4px;
+                padding: 8px;
                 font-weight: bold;
                 border: 1px solid #45a049;
             }
@@ -309,14 +480,17 @@ class PuzzleGame(QMainWindow):
     def start_game(self, mode):
         self.game_mode = mode
         if self.game_mode == "挑战":
-            self.n = 4  
+            self.n = 4
+            self.init_game_ui()
         else:
-            difficulty, ok = QInputDialog.getInt(self, "选择难度", "请输入拼图的行列数（例如：3表示3×3）:", 
-                                               value=3, min=2, max=6)
-            if not ok:
-                return
-            self.n = difficulty
-        self.init_game_ui()
+            # 使用新的难度选择窗口
+            difficulty_dialog = DifficultySelectionWindow(self)
+            if difficulty_dialog.exec_() == QDialog.Accepted:
+                selected_difficulty = difficulty_dialog.get_selected_difficulty()
+                if selected_difficulty is not None:
+                    self.n = selected_difficulty
+                    self.init_game_ui()
+            # 如果取消选择，返回主界面
 
     def display_pieces(self):
         self.clear_puzzle_layout()
