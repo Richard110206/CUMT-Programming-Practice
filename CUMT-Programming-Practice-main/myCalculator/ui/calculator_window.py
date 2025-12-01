@@ -147,13 +147,14 @@ class CalculatorApp:
         button_frame = ttk.Frame(basic_frame)
         button_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=(0, 12))
 
-        # 重新设计的按钮布局 - 优化尺寸和间距
+        # 重新设计的按钮布局 - 添加括号功能，优化尺寸和间距
         buttons = [
-            ('C', 0, 0, 1, 1), ('±', 0, 1, 1, 1), ('%', 0, 2, 1, 1), ('÷', 0, 3, 1, 1),
-            ('7', 1, 0, 1, 1), ('8', 1, 1, 1, 1), ('9', 1, 2, 1, 1), ('×', 1, 3, 1, 1),
-            ('4', 2, 0, 1, 1), ('5', 2, 1, 1, 1), ('6', 2, 2, 1, 1), ('−', 2, 3, 1, 1),
-            ('1', 3, 0, 1, 1), ('2', 3, 1, 1, 1), ('3', 3, 2, 1, 1), ('+', 3, 3, 1, 1),
-            ('0', 4, 0, 1, 2), ('.', 4, 2, 1, 1), ('⌫', 4, 3, 1, 1), ('=', 5, 0, 1, 4)
+            ('C', 0, 0, 1, 1), ('±', 0, 1, 1, 1), ('%', 0, 2, 1, 1), ('⌫', 0, 3, 1, 1),
+            ('7', 1, 0, 1, 1), ('8', 1, 1, 1, 1), ('9', 1, 2, 1, 1), ('÷', 1, 3, 1, 1),
+            ('4', 2, 0, 1, 1), ('5', 2, 1, 1, 1), ('6', 2, 2, 1, 1), ('×', 2, 3, 1, 1),
+            ('1', 3, 0, 1, 1), ('2', 3, 1, 1, 1), ('3', 3, 2, 1, 1), ('−', 3, 3, 1, 1),
+            ('0', 4, 0, 1, 1), ('.', 4, 1, 1, 1), ('(', 4, 2, 1, 1), (')', 4, 3, 1, 1),
+            ('=', 5, 0, 1, 3), ('+', 5, 3, 1, 1)
         ]
 
         for text, row, col, rowspan, colspan in buttons:
@@ -163,6 +164,8 @@ class CalculatorApp:
                 btn_style = "Function.TButton"
             elif text in ['÷', '×', '−', '+']:
                 btn_style = "Operator.TButton"
+            elif text in ['(', ')']:
+                btn_style = "Parenthesis.TButton"
             elif text == '=':
                 btn_style = "Equals.TButton"
 
@@ -181,6 +184,9 @@ class CalculatorApp:
             button_frame.grid_rowconfigure(i, weight=1, uniform="row")
         for i in range(4):
             button_frame.grid_columnconfigure(i, weight=1, uniform="col")
+
+        # 绑定键盘事件
+        self.setup_keyboard_bindings()
 
     def create_math_functions_tab(self):
         """创建数学函数页面 - 优化布局"""
@@ -689,6 +695,17 @@ class CalculatorApp:
         style.map("Equals.TButton",
                  background=[("active", "#c0392b"), ("pressed", "#a93226")])
 
+        # 括号按钮样式 - 紫色系
+        style.configure("Parenthesis.TButton",
+                       font=("Arial", 17, "bold"),
+                       foreground="white",
+                       background="#9b59b6",
+                       borderwidth=0,
+                       focuscolor="none",
+                       padding=10)
+        style.map("Parenthesis.TButton",
+                 background=[("active", "#8e44ad"), ("pressed", "#7d3c98")])
+
         # 数学函数专用按钮样式（13号字体）
         style.configure("MathNumber.TButton",
                        font=("Arial", 13, "bold"),
@@ -819,6 +836,19 @@ class CalculatorApp:
                     self.new_number = True
                 except:
                     messagebox.showerror("错误", "无法计算百分比")
+
+            elif button_text == '(':
+                # 左括号
+                if self.new_number:
+                    self.calculator.clear()
+                    self.new_number = False
+                self.calculator.input_digit('(')
+                self.display_var.set(self.calculator.get_current_expression())
+
+            elif button_text == ')':
+                # 右括号
+                self.calculator.input_digit(')')
+                self.display_var.set(self.calculator.get_current_expression())
 
         except Exception as e:
             messagebox.showerror("计算错误", str(e))
@@ -1076,6 +1106,55 @@ class CalculatorApp:
 
         except Exception as e:
             messagebox.showerror("计算错误", str(e))
+
+    def setup_keyboard_bindings(self):
+        """设置键盘绑定"""
+        # 数字键 0-9
+        for i in range(10):
+            self.root.bind(f'<Key-{i}>', lambda e, digit=str(i): self.on_basic_button_click(digit))
+
+        # 数字小键盘
+        self.root.bind('<KP_0>', lambda e: self.on_basic_button_click('0'))
+        self.root.bind('<KP_1>', lambda e: self.on_basic_button_click('1'))
+        self.root.bind('<KP_2>', lambda e: self.on_basic_button_click('2'))
+        self.root.bind('<KP_3>', lambda e: self.on_basic_button_click('3'))
+        self.root.bind('<KP_4>', lambda e: self.on_basic_button_click('4'))
+        self.root.bind('<KP_5>', lambda e: self.on_basic_button_click('5'))
+        self.root.bind('<KP_6>', lambda e: self.on_basic_button_click('6'))
+        self.root.bind('<KP_7>', lambda e: self.on_basic_button_click('7'))
+        self.root.bind('<KP_8>', lambda e: self.on_basic_button_click('8'))
+        self.root.bind('<KP_9>', lambda e: self.on_basic_button_click('9'))
+
+        # 运算符
+        self.root.bind('<plus>', lambda e: self.on_basic_button_click('+'))
+        self.root.bind('<minus>', lambda e: self.on_basic_button_click('−'))
+        self.root.bind('<asterisk>', lambda e: self.on_basic_button_click('×'))
+        self.root.bind('<slash>', lambda e: self.on_basic_button_click('÷'))
+        self.root.bind('<KP_Add>', lambda e: self.on_basic_button_click('+'))
+        self.root.bind('<KP_Subtract>', lambda e: self.on_basic_button_click('−'))
+        self.root.bind('<KP_Multiply>', lambda e: self.on_basic_button_click('×'))
+        self.root.bind('<KP_Divide>', lambda e: self.on_basic_button_click('÷'))
+
+        # 小数点
+        self.root.bind('<period>', lambda e: self.on_basic_button_click('.'))
+        self.root.bind('<KP_Decimal>', lambda e: self.on_basic_button_click('.'))
+
+        # 括号
+        self.root.bind('<parenleft>', lambda e: self.on_basic_button_click('('))
+        self.root.bind('<parenright>', lambda e: self.on_basic_button_click(')'))
+        self.root.bind('<Shift-9>', lambda e: self.on_basic_button_click('('))  # Shift + 9 = (
+        self.root.bind('<Shift-0>', lambda e: self.on_basic_button_click(')'))  # Shift + 0 = )
+
+        # 功能键
+        self.root.bind('<Return>', lambda e: self.on_basic_button_click('='))
+        self.root.bind('<KP_Enter>', lambda e: self.on_basic_button_click('='))
+        self.root.bind('<BackSpace>', lambda e: self.on_basic_button_click('⌫'))
+        self.root.bind('<Delete>', lambda e: self.on_basic_button_click('C'))
+        self.root.bind('<Escape>', lambda e: self.on_basic_button_click('C'))
+
+        # 百分比和正负号
+        self.root.bind('<percent>', lambda e: self.on_basic_button_click('%'))
+        self.root.bind('<Shift-equal>', lambda e: self.on_basic_button_click('±'))  # Shift + = = ±
 
     def show_about(self):
         """显示关于对话框"""
