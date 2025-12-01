@@ -25,7 +25,7 @@ class DifficultySelectionWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("选择难度")
-        self.setFixedSize(500, 450)
+        self.setFixedSize(500, 480)  # 适中的窗口高度
         self.setModal(True)
         self.selected_difficulty = None
         self.init_ui()
@@ -56,8 +56,9 @@ class DifficultySelectionWindow(QDialog):
 
         # 难度按钮布局
         button_grid = QGridLayout()
-        button_grid.setSpacing(12)
-        button_grid.setContentsMargins(0, 0, 0, 0)
+        button_grid.setSpacing(25)  # 增加按钮之间的间距
+        button_grid.setContentsMargins(0, 20, 0, 20)  # 增加上下边距
+        button_grid.setVerticalSpacing(30)  # 增加垂直间距
 
         # 定义四个难度档位
         difficulties = [
@@ -74,28 +75,28 @@ class DifficultySelectionWindow(QDialog):
 
             # 设置按钮文字和样式
             btn.setText(f"{diff['desc']}\n{diff['name']}")
-            btn.setFont(QFont("Arial", 14, QFont.Bold))
+            btn.setFont(QFont("Arial", 12, QFont.Bold))
 
             btn.setStyleSheet(f"""
                 QPushButton {{
                     background-color: {diff['color']};
                     color: white;
-                    border: 3px solid white;
-                    border-radius: 10px;
-                    padding: 12px;
+                    border: 2px solid white;
+                    border-radius: 8px;
+                    padding: 8px;
                     font-weight: bold;
-                    font-size: 14px;
-                    min-width: 90px;
-                    min-height: 70px;
+                    font-size: 13px;
+                    min-width: 80px;
+                    min-height: 60px;
                     text-align: center;
                 }}
                 QPushButton:hover {{
                     background-color: {diff['color']};
-                    border: 4px solid #FFD700;
+                    border: 3px solid #FFD700;
                 }}
                 QPushButton:pressed {{
                     background-color: {diff['color']};
-                    border: 2px solid white;
+                    border: 1px solid white;
                 }}
             """)
 
@@ -127,13 +128,19 @@ class DifficultySelectionWindow(QDialog):
             }
         """)
 
-        # 居中显示取消按钮
-        cancel_layout = QHBoxLayout()
-        cancel_layout.addStretch()
-        cancel_layout.addWidget(cancel_btn)
-        cancel_layout.addStretch()
+        # 居中显示取消按钮，增加上边距避免重叠
+        cancel_container = QWidget()
+        cancel_layout = QVBoxLayout(cancel_container)
+        cancel_layout.setContentsMargins(0, 25, 0, 0)  # 增加上边距25像素
+        cancel_layout.setSpacing(0)
 
-        main_layout.addLayout(cancel_layout)
+        button_row_layout = QHBoxLayout()
+        button_row_layout.addStretch()
+        button_row_layout.addWidget(cancel_btn)
+        button_row_layout.addStretch()
+
+        cancel_layout.addLayout(button_row_layout)
+        main_layout.addWidget(cancel_container)
 
     def update_suffix(self, value):
         """更新SpinBox的后缀显示"""
@@ -149,6 +156,237 @@ class DifficultySelectionWindow(QDialog):
 
     def get_selected_difficulty(self):
         return self.selected_difficulty
+
+
+class PuzzleCompletionWindow(QDialog):
+    """拼图完成窗口 - 美化版本"""
+    def __init__(self, game_mode, elapsed_time, step_count, parent=None):
+        super().__init__(parent)
+        self.game_mode = game_mode
+        self.elapsed_time = elapsed_time
+        self.step_count = step_count
+        self.init_ui()
+
+    def init_ui(self):
+        # 设置窗口
+        self.setWindowTitle("拼图完成！")
+        self.setFixedSize(450, 450)
+        self.setModal(True)
+
+        # 根据游戏模式设置背景颜色
+        bg_color = "#4CAF50" if self.game_mode == "休闲" else "#F18F01"
+        self.setStyleSheet(f"background-color: {bg_color};")
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(25, 25, 25, 25)
+        main_layout.setSpacing(20)
+
+        # 标题和图标
+        title_widget = QWidget()
+        title_layout = QVBoxLayout(title_widget)
+        title_layout.setSpacing(10)
+        title_layout.setContentsMargins(0, 0, 0, 0)
+
+        # 🎉 标题
+        title_label = QLabel("🎉 拼图完成！🎉")
+        title_label.setFont(QFont("Arial", 22, QFont.Bold))
+        title_label.setAlignment(Qt.AlignCenter)
+        title_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                background-color: rgba(0, 0, 0, 120);
+                padding: 15px;
+                border-radius: 12px;
+                margin-bottom: 10px;
+            }
+        """)
+        title_layout.addWidget(title_label)
+
+        # 成绩信息卡片
+        info_card = QWidget()
+        info_card.setStyleSheet("""
+            QWidget {
+                background-color: rgba(255, 255, 255, 200);
+                border-radius: 12px;
+                padding: 20px;
+            }
+        """)
+        info_layout = QVBoxLayout(info_card)
+        info_layout.setSpacing(15)
+
+        # 模式显示
+        mode_label = QLabel(f"游戏模式: {self.game_mode}")
+        mode_label.setFont(QFont("Arial", 16, QFont.Bold))
+        mode_label.setAlignment(Qt.AlignCenter)
+        mode_label.setStyleSheet("""
+            QLabel {
+                color: #333;
+                padding: 8px;
+                background-color: rgba(76, 175, 80, 100);
+                border-radius: 6px;
+            }
+        """)
+        info_layout.addWidget(mode_label)
+
+        # 用时显示
+        time_label = QLabel(f"⏱️ 用时: {self.elapsed_time:.2f} 秒")
+        time_label.setFont(QFont("Arial", 16, QFont.Bold))
+        time_label.setAlignment(Qt.AlignCenter)
+        time_label.setStyleSheet("""
+            QLabel {
+                color: #333;
+                padding: 8px;
+                background-color: rgba(33, 150, 243, 100);
+                border-radius: 6px;
+            }
+        """)
+        info_layout.addWidget(time_label)
+
+        # 步数显示
+        steps_label = QLabel(f"👆 步数: {self.step_count} 步")
+        steps_label.setFont(QFont("Arial", 16, QFont.Bold))
+        steps_label.setAlignment(Qt.AlignCenter)
+        steps_label.setStyleSheet("""
+            QLabel {
+                color: #333;
+                padding: 8px;
+                background-color: rgba(255, 152, 0, 100);
+                border-radius: 6px;
+            }
+        """)
+        info_layout.addWidget(steps_label)
+
+        # 评价
+        rating = self.get_rating()
+        rating_label = QLabel(f"⭐ 评价: {rating}")
+        rating_label.setFont(QFont("Arial", 16, QFont.Bold))
+        rating_label.setAlignment(Qt.AlignCenter)
+        rating_label.setStyleSheet("""
+            QLabel {
+                color: #333;
+                padding: 8px;
+                background-color: rgba(255, 215, 0, 100);
+                border-radius: 6px;
+            }
+        """)
+        info_layout.addWidget(rating_label)
+
+        title_layout.addWidget(info_card)
+        main_layout.addWidget(title_widget)
+
+        # 按钮布局
+        button_layout = QHBoxLayout()
+        button_layout.setSpacing(15)
+
+        # 查看作品按钮
+        view_btn = QPushButton("查看作品")
+        view_btn.setFont(QFont("Arial", 12, QFont.Bold))
+        view_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                border: 2px solid white;
+                border-radius: 8px;
+                padding: 12px 20px;
+                font-weight: bold;
+                font-size: 14px;
+                min-width: 100px;
+                min-height: 40px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+                border: 3px solid #FFD700;
+            }
+            QPushButton:pressed {
+                background-color: #3d8b40;
+            }
+        """)
+        view_btn.clicked.connect(self.accept)
+
+        # 再玩一次按钮
+        replay_btn = QPushButton("再玩一次")
+        replay_btn.setFont(QFont("Arial", 12, QFont.Bold))
+        replay_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #2196F3;
+                color: white;
+                border: 2px solid white;
+                border-radius: 8px;
+                padding: 12px 20px;
+                font-weight: bold;
+                font-size: 14px;
+                min-width: 100px;
+                min-height: 40px;
+            }
+            QPushButton:hover {
+                background-color: #1976D2;
+                border: 3px solid #FFD700;
+            }
+            QPushButton:pressed {
+                background-color: #0d47a1;
+            }
+        """)
+        replay_btn.clicked.connect(self.replay)
+
+        # 返回主菜单按钮
+        menu_btn = QPushButton("主菜单")
+        menu_btn.setFont(QFont("Arial", 12, QFont.Bold))
+        menu_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #f44336;
+                color: white;
+                border: 2px solid white;
+                border-radius: 8px;
+                padding: 12px 20px;
+                font-weight: bold;
+                font-size: 14px;
+                min-width: 100px;
+                min-height: 40px;
+            }
+            QPushButton:hover {
+                background-color: #d32f2f;
+                border: 3px solid #FFD700;
+            }
+            QPushButton:pressed {
+                background-color: #b71c1c;
+            }
+        """)
+        menu_btn.clicked.connect(self.back_to_menu)
+
+        button_layout.addWidget(view_btn)
+        button_layout.addWidget(replay_btn)
+        button_layout.addWidget(menu_btn)
+
+        main_layout.addLayout(button_layout)
+
+    def get_rating(self):
+        """根据表现给出评价"""
+        if self.game_mode == "挑战":
+            if self.elapsed_time < 30 and self.step_count < 50:
+                return "完美！🏆"
+            elif self.elapsed_time < 60 and self.step_count < 100:
+                return "优秀！⭐⭐⭐"
+            elif self.elapsed_time < 120 and self.step_count < 200:
+                return "良好！⭐⭐"
+            else:
+                return "完成！⭐"
+        else:
+            if self.step_count < 50:
+                return "很棒！👏"
+            elif self.step_count < 100:
+                return "不错！👍"
+            else:
+                return "完成！✓"
+
+    def replay(self):
+        """再玩一次"""
+        self.setResult(2)  # 自定义返回值表示再玩一次
+        self.accept()
+
+    def back_to_menu(self):
+        """返回主菜单"""
+        self.setResult(3)  # 自定义返回值表示返回主菜单
+        self.accept()
 
 
 class PuzzleGame(QMainWindow):
@@ -286,6 +524,17 @@ class PuzzleGame(QMainWindow):
         self.leaderboard_window = LeaderboardWindow(self)
         self.leaderboard_window.show()
 
+    def show_main_menu(self):
+        """返回主菜单"""
+        self.timer.stop()
+        self.hide_completion_ui()
+        self.init_cover()
+
+    def show_leaderboard_from_completion(self):
+        """从完成界面显示排行榜"""
+        self.leaderboard_window = LeaderboardWindow(self)
+        self.leaderboard_window.show()
+
     def start_game(self, mode):
         """开始游戏"""
         self.game_mode = mode
@@ -349,12 +598,15 @@ class PuzzleGame(QMainWindow):
 
         self.game_area = QWidget()
         self.game_area.setStyleSheet("background-color: transparent;")
+        self.game_area_layout = QVBoxLayout(self.game_area)
+        self.game_area_layout.setContentsMargins(0, 0, 0, 0)
+        self.game_area_layout.setSpacing(0)
         main_layout.addWidget(self.game_area)
         main_layout.setStretchFactor(self.game_area, 1)
 
         self.grid_container = QWidget()
         self.grid_container.setStyleSheet("background-color: transparent; border: none;")
-        self.grid_container.setVisible(False)
+        self.grid_container.setVisible(True)
         grid_main_layout = QVBoxLayout(self.grid_container)
         grid_main_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -363,12 +615,12 @@ class PuzzleGame(QMainWindow):
         self.grid_layout.setContentsMargins(0, 0, 0, 0)
 
         grid_main_layout.addLayout(self.grid_layout)
-        main_layout.addWidget(self.grid_container)
+        self.game_area_layout.addWidget(self.grid_container)
 
         self.complete_image_label = QLabel()
         self.complete_image_label.setAlignment(Qt.AlignCenter)
         self.complete_image_label.setVisible(False)
-        main_layout.addWidget(self.complete_image_label)
+        self.game_area_layout.addWidget(self.complete_image_label)
 
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(20)
@@ -537,13 +789,151 @@ class PuzzleGame(QMainWindow):
             if self.game_mode == "挑战":
                 GameLogic.save_to_leaderboard(self.elapsed_time, self.step_count)
 
-            self.show_complete_image()
+            # 显示完成弹窗
+            completion_dialog = PuzzleCompletionWindow(self.game_mode, self.elapsed_time, self.step_count, self)
+            result = completion_dialog.exec_()
 
-            QMessageBox.information(self, "恭喜",
-                f"拼图完成！\n用时: {self.elapsed_time:.2f}秒\n步数: {self.step_count}步")
+            if result == 1:  # 查看作品
+                self.show_complete_image_with_options()
+            elif result == 2:  # 再玩一次
+                self.start_game(self.difficulty)
+            elif result == 3:  # 返回主菜单
+                self.show_main_menu()
+
+    def show_complete_image_with_options(self):
+        """显示完整图片并提供操作选项"""
+        if self.original_pixmap:
+            self.grid_container.setVisible(False)
+
+            scaled_pixmap = self.original_pixmap.scaled(
+                self.game_area.size() * 1.2,
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation
+            )
+            self.complete_image_label.setPixmap(scaled_pixmap)
+            self.complete_image_label.setVisible(True)
+
+            # 创建完成信息标签
+            self.completion_info_label = QLabel(f"恭喜完成拼图！\n用时: {self.elapsed_time:.2f}秒\n步数: {self.step_count}步")
+            self.completion_info_label.setAlignment(Qt.AlignCenter)
+            self.completion_info_label.setStyleSheet("""
+                QLabel {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #2c3e50;
+                    background-color: rgba(255, 255, 255, 0.9);
+                    padding: 10px;
+                    border-radius: 8px;
+                    margin: 10px;
+                }
+            """)
+            self.game_area_layout.addWidget(self.completion_info_label)
+
+            # 创建操作按钮容器
+            self.completion_buttons_widget = QWidget()
+            button_layout = QHBoxLayout()
+
+            # 再玩一次按钮
+            self.play_again_btn = QPushButton("再玩一次")
+            self.play_again_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #3498db;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    border-radius: 6px;
+                    min-width: 100px;
+                }
+                QPushButton:hover {
+                    background-color: #2980b9;
+                }
+            """)
+            self.play_again_btn.clicked.connect(self.play_again)
+
+            # 返回主菜单按钮
+            self.back_to_menu_btn = QPushButton("返回主菜单")
+            self.back_to_menu_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #e74c3c;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    border-radius: 6px;
+                    min-width: 100px;
+                }
+                QPushButton:hover {
+                    background-color: #c0392b;
+                }
+            """)
+            self.back_to_menu_btn.clicked.connect(self.back_to_main_menu)
+
+            # 查看排行榜按钮（仅挑战模式）
+            if self.game_mode == "挑战":
+                self.leaderboard_btn = QPushButton("查看排行榜")
+                self.leaderboard_btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: #27ae60;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        font-size: 14px;
+                        font-weight: bold;
+                        border-radius: 6px;
+                        min-width: 100px;
+                    }
+                    QPushButton:hover {
+                        background-color: #219a52;
+                    }
+                """)
+                self.leaderboard_btn.clicked.connect(self.show_leaderboard_from_completion)
+                button_layout.addWidget(self.leaderboard_btn)
+
+            button_layout.addStretch()
+            button_layout.addWidget(self.play_again_btn)
+            button_layout.addWidget(self.back_to_menu_btn)
+            button_layout.addStretch()
+
+            self.completion_buttons_widget.setLayout(button_layout)
+            self.completion_buttons_widget.setStyleSheet("""
+                QWidget {
+                    background-color: transparent;
+                    padding: 10px;
+                }
+            """)
+
+            self.game_area_layout.addWidget(self.completion_buttons_widget)
+
+    def play_again(self):
+        """再玩一次"""
+        self.hide_completion_ui()
+        self.start_game(self.difficulty)
+
+    def back_to_main_menu(self):
+        """返回主菜单"""
+        self.hide_completion_ui()
+        self.show_main_menu()
+
+    def hide_completion_ui(self):
+        """隐藏完成界面的UI元素"""
+        if hasattr(self, 'completion_info_label'):
+            self.completion_info_label.hide()
+            self.game_area_layout.removeWidget(self.completion_info_label)
+            delattr(self, 'completion_info_label')
+
+        if hasattr(self, 'completion_buttons_widget'):
+            self.completion_buttons_widget.hide()
+            self.game_area_layout.removeWidget(self.completion_buttons_widget)
+            delattr(self, 'completion_buttons_widget')
+
+        self.complete_image_label.setVisible(False)
+        self.grid_container.setVisible(True)
 
     def show_complete_image(self):
-        """显示完整图片"""
+        """显示完整图片（保留原方法以备其他地方使用）"""
         if self.original_pixmap:
             self.grid_container.setVisible(False)
 
