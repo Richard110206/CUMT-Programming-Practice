@@ -751,10 +751,10 @@ class CalculatorApp:
         style.map("TEntry",
                  focuscolor=[("focus", "#3498db")])
 
-        # 组合框样式 - 深色主题
+        # 组合框样式 - 与输入框相同的颜色主题
         style.configure("TCombobox",
-                       fieldbackground="#34495e",
-                       foreground="white",
+                       fieldbackground="#f0f0f0",
+                       foreground="#2c3e50",
                        borderwidth=1,
                        font=("Arial", 10))
         style.map("TCombobox",
