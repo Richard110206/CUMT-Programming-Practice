@@ -37,8 +37,6 @@ CUMT-Programming-Practice/
 - 货币汇率转换
 - 贷款计算器
 
-**技术栈**: Python, Tkinter
-
 ### 🎮 趣味拼图游戏 (Puzzle_Master)
 <p>
   <img src="https://img.shields.io/badge/Framework-PyQt5-41cd52.svg" alt="PyQt5">
