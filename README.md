@@ -1,4 +1,4 @@
-# CUMT编程实践项目集合 🎯
+# CUMT程序设计综合实践 🎯
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python Version">
@@ -8,7 +8,6 @@
   <img src="https://img.shields.io/badge/Project-Educational%20Final-orange.svg" alt="Project Type">
 </p>
 
-> 中国矿业大学编程实践课程项目集合，包含多个实用工具和趣味应用
 
 ## 📁 项目结构
 
@@ -54,8 +53,6 @@ CUMT-Programming-Practice/
 - 多种难度等级（2×2 到 6×6）
 - 自定义图片支持
 
-**技术栈**: Python, PyQt5
-
 ### 📝 智能文本编辑器 (TextEditor)
 <p>
   <img src="https://img.shields.io/badge/Framework-Tkinter-8dd2f7.svg" alt="Tkinter">
@@ -66,11 +63,14 @@ CUMT-Programming-Practice/
 
 功能完整的文本编辑器：
 - 语法高亮
-- 智能AI助手集成
+- 智能AI助手集成（支持DeepSeek API）
 - 多标签页支持
 - 文件管理功能
+- AI文本续写和总结功能
 
 **技术栈**: Python, Tkinter, API集成
+
+⚠️ **重要提示**: 要使用AI功能，需要配置API密钥！详见下方环境配置说明。
 
 ## 🛠️ 安装要求
 
@@ -83,9 +83,44 @@ CUMT-Programming-Practice/
 # 安装PyQt5（仅拼图游戏需要）
 pip install PyQt5
 
+# 安装文本编辑器依赖（包括dotenv）
+pip install python-dotenv requests
+
 # 安装其他依赖（如果需要）
 pip install -r requirements.txt
 ```
+
+### 🔑 API密钥配置（文本编辑器AI功能）
+
+要使用文本编辑器的AI功能，需要配置DeepSeek API密钥：
+
+1. **获取API密钥**
+   - 访问 [DeepSeek官网](https://platform.deepseek.com) 注册账号
+   - 在控制台中创建新的API密钥
+
+2. **创建环境配置文件**
+   ```bash
+   cd TextEditor
+   touch .env
+   ```
+
+3. **编辑.env文件**
+   ```env
+   DEEPSEEK_API_KEY=你的API密钥
+   BASE_URL=https://api.deepseek.com/v1/chat/completions
+   ```
+
+4. **支持其他大模型API**
+   你也可以配置其他兼容OpenAI格式的API：
+   ```env
+   # 例如使用其他API服务
+   DEEPSEEK_API_KEY=你的API密钥
+   BASE_URL=https://你的API服务地址/v1/chat/completions
+   ```
+
+⚠️ **注意事项**：
+- 请妥善保管你的API密钥，不要将其提交到代码仓库
+- 如果没有配置API密钥，文本编辑器仍可正常使用，但AI功能将返回模拟数据
 
 ## 🎮 快速开始
 
@@ -107,20 +142,6 @@ cd TextEditor
 python main_window.py
 ```
 
-## 📸 项目截图
-
-> [项目截图将在后续添加]
-
-## 🤝 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
-
-1. Fork 本仓库
-2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交你的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启一个 Pull Request
-
 ## 📝 更新日志
 
 ### v2.0.0 (2025-12-03)
@@ -137,7 +158,6 @@ python main_window.py
 ## 👥 作者
 
 - **Richard110206** - *项目维护者*
-- **Puzzle Master Team** - *拼图游戏开发团队*
 
 ## 📄 许可证
 
