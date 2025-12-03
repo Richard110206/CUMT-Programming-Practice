@@ -1,6 +1,6 @@
 # CUMT程序设计综合实践 🎯
 
-<p align="center">
+<p>
   <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python Version">
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Platform">
