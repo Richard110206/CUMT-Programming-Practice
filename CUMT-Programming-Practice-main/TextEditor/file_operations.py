@@ -123,24 +123,30 @@ class FileOperations:
         
         return False
     
-    def save_file(self, editor_widget):
+    def save_file(self, editor_widget, file_path=None):
         """
         保存文件
         :param editor_widget: 编辑器组件实例
+        :param file_path: 指定文件路径，如果为None则使用current_file_path
         :return: 是否成功保存文件
         """
-        if self.current_file_path:
+        target_path = file_path or self.current_file_path
+        if target_path:
             try:
                 # 获取编辑器内容
                 if hasattr(editor_widget, 'get_content'):
                     content = editor_widget.get_content()
                 else:
                     content = editor_widget.toPlainText()
-                
+
                 # 写入文件
-                with open(self.current_file_path, 'w', encoding='utf-8') as file:
+                with open(target_path, 'w', encoding='utf-8') as file:
                     file.write(content)
-                
+
+                # 更新当前文件路径（只有当没有指定file_path时）
+                if file_path is None:
+                    self.current_file_path = target_path
+
                 # 标记文档为未修改
                 if hasattr(editor_widget, 'document'):
                     editor_widget.document().setModified(False)

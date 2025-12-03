@@ -98,13 +98,14 @@ class FontControlPanel(QWidget):
                 padding: 8px 12px;
                 font-size: 13px;
                 min-height: 20px;
-                color: #000000;
+                color: #2d3748;
             }
             QComboBox:hover {
-                border-color: #2196F3;
+                border-color: #3182ce;
+                background: #f7fafc;
             }
             QComboBox:focus {
-                border-color: #2196F3;
+                border-color: #3182ce;
             }
             QComboBox::drop-down {
                 border: none;
@@ -114,29 +115,29 @@ class FontControlPanel(QWidget):
                 image: none;
                 border-left: 4px solid transparent;
                 border-right: 4px solid transparent;
-                border-top: 4px solid #666;
+                border-top: 4px solid #4a5568;
                 margin-right: 5px;
             }
             QComboBox QAbstractItemView {
                 background: white;
                 border: 1px solid #e0e0e0;
                 border-radius: 4px;
-                selection-background-color: #e3f2fd;
-                color: #000000;
+                selection-background-color: #ebf8ff;
+                color: #2d3748;
             }
             QComboBox QAbstractItemView::item {
                 padding: 8px 12px;
-                color: #000000;
+                color: #2d3748;
             }
             QComboBox QAbstractItemView::item:selected {
-                background-color: #e3f2fd;
-                color: #1976D2;
+                background-color: #ebf8ff;
+                color: #2b6cb0;
             }
         """
 
         label_style = """
             QLabel {
-                color: #555;
+                color: #4a5568;
                 font-size: 13px;
                 font-weight: 600;
                 padding: 0 5px;
@@ -254,13 +255,14 @@ class FormatControlPanel(QWidget):
                 font-size: 13px;
                 min-height: 20px;
                 min-width: 100px;
-                color: #000000;
+                color: #2d3748;
             }
             QComboBox:hover {
-                border-color: #2196F3;
+                border-color: #3182ce;
+                background: #f7fafc;
             }
             QComboBox:focus {
-                border-color: #2196F3;
+                border-color: #3182ce;
             }
             QComboBox::drop-down {
                 border: none;
@@ -270,29 +272,29 @@ class FormatControlPanel(QWidget):
                 image: none;
                 border-left: 4px solid transparent;
                 border-right: 4px solid transparent;
-                border-top: 4px solid #666;
+                border-top: 4px solid #4a5568;
                 margin-right: 5px;
             }
             QComboBox QAbstractItemView {
                 background: white;
                 border: 1px solid #e0e0e0;
                 border-radius: 4px;
-                selection-background-color: #e3f2fd;
-                color: #000000;
+                selection-background-color: #ebf8ff;
+                color: #2d3748;
             }
             QComboBox QAbstractItemView::item {
                 padding: 8px 12px;
-                color: #000000;
+                color: #2d3748;
             }
             QComboBox QAbstractItemView::item:selected {
-                background-color: #e3f2fd;
-                color: #1976D2;
+                background-color: #ebf8ff;
+                color: #2b6cb0;
             }
         """
 
         label_style = """
             QLabel {
-                color: #555;
+                color: #4a5568;
                 font-size: 13px;
                 font-weight: 600;
                 padding: 0 5px;
@@ -347,7 +349,7 @@ class AlignmentControlPanel(QWidget):
         button_style = """
             QPushButton {
                 background: #f8f9fa;
-                color: #495057;
+                color: #2d3748;
                 border: 1px solid #dee2e6;
                 border-radius: 6px;
                 font-size: 13px;
@@ -357,24 +359,24 @@ class AlignmentControlPanel(QWidget):
                 text-align: left;
             }
             QPushButton:hover {
-                background: #e3f2fd;
-                border-color: #2196F3;
-                color: #1976D2;
+                background: #ebf8ff;
+                border-color: #3182ce;
+                color: #2b6cb0;
             }
             QPushButton:pressed {
-                background: #bbdefb;
+                background: #bee3f8;
             }
             QPushButton:checked {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2196F3, stop:1 #1976D2);
+                    stop:0 #3182ce, stop:1 #2b6cb0);
                 color: white;
-                border-color: #1976D2;
+                border-color: #2b6cb0;
             }
         """
 
         label_style = """
             QLabel {
-                color: #555;
+                color: #4a5568;
                 font-size: 13px;
                 font-weight: 600;
                 padding: 0 5px;
@@ -469,17 +471,17 @@ class DeepSeekControlPanel(QWidget):
                 border: 1px solid #e0e0e0;
                 border-radius: 4px;
                 padding: 4px 8px;
-                font-size: 12px;
-                min-height: 16px;
+                font-size: 13px;
+                min-height: 18px;
                 min-width: 120px;
-                color: #333;
+                color: #2d3748;
             }
             QComboBox:hover {
-                border-color: #2196F3;
-                background: #f8f9ff;
+                border-color: #3182ce;
+                background: #f7fafc;
             }
             QComboBox:focus {
-                border-color: #1976D2;
+                border-color: #3182ce;
                 outline: none;
             }
             QComboBox::drop-down {
@@ -491,20 +493,20 @@ class DeepSeekControlPanel(QWidget):
                 image: none;
                 border-left: 3px solid transparent;
                 border-right: 3px solid transparent;
-                border-top: 3px solid #1976D2;
+                border-top: 3px solid #4a5568;
                 margin-right: 4px;
             }
             QComboBox QAbstractItemView {
                 background: white;
                 border: 1px solid #e0e0e0;
                 border-radius: 4px;
-                selection-background-color: #e3f2fd;
-                selection-color: #1976D2;
-                color: #333;
+                selection-background-color: #ebf8ff;
+                selection-color: #2b6cb0;
+                color: #2d3748;
             }
             QComboBox QAbstractItemView::item {
                 padding: 4px 8px;
-                color: #333;
+                color: #2d3748;
             }
         """
 
@@ -594,13 +596,13 @@ class MainToolBar(QToolBar):
                     stop:0 #f8f9fa, stop:1 #e9ecef);
                 border: none;
                 border-bottom: 2px solid #dee2e6;
-                spacing: 8px;
-                padding: 8px 12px;
+                spacing: 6px;
+                padding: 4px 8px;
             }
             QToolBar::separator {
                 background: #ced4da;
                 width: 1px;
-                margin: 8px 4px;
+                margin: 4px 2px;
             }
         """)
 
@@ -608,7 +610,7 @@ class MainToolBar(QToolBar):
         container = QWidget(self)
         container_layout = QVBoxLayout(container)
         container_layout.setContentsMargins(0, 0, 0, 0)
-        container_layout.setSpacing(8)
+        container_layout.setSpacing(4)
 
         # 第一行：字体控制
         self.font_panel = FontControlPanel(container)
@@ -616,8 +618,12 @@ class MainToolBar(QToolBar):
             FontControlPanel {
                 background: white;
                 border-radius: 8px;
-                border: 1px solid #e0e0e0;
+                border: 1px solid #dee2e6;
                 margin: 2px;
+            }
+            FontControlPanel:hover {
+                border-color: #2196F3;
+                box-shadow: 0 0 0 1px rgba(33, 150, 243, 0.1);
             }
         """)
         container_layout.addWidget(self.font_panel)
@@ -634,8 +640,12 @@ class MainToolBar(QToolBar):
             FormatControlPanel {
                 background: white;
                 border-radius: 8px;
-                border: 1px solid #e0e0e0;
+                border: 1px solid #dee2e6;
                 margin: 2px;
+            }
+            FormatControlPanel:hover {
+                border-color: #2196F3;
+                box-shadow: 0 0 0 1px rgba(33, 150, 243, 0.1);
             }
         """)
         row2_layout.addWidget(self.format_panel)
@@ -658,8 +668,12 @@ class MainToolBar(QToolBar):
             AlignmentControlPanel {
                 background: white;
                 border-radius: 8px;
-                border: 1px solid #e0e0e0;
+                border: 1px solid #dee2e6;
                 margin: 2px;
+            }
+            AlignmentControlPanel:hover {
+                border-color: #2196F3;
+                box-shadow: 0 0 0 1px rgba(33, 150, 243, 0.1);
             }
         """)
         row2_layout.addWidget(self.alignment_panel)
@@ -735,13 +749,13 @@ class AIResultPanel(QWidget):
         title_label = QLabel("AI 结果", self)
         title_label.setStyleSheet("""
             QLabel {
-                color: #1976D2;
-                font-size: 15px;
+                color: #2b6cb0;
+                font-size: 16px;
                 font-weight: 600;
                 padding: 6px 12px;
-                background: rgba(25, 118, 210, 0.08);
+                background: rgba(49, 130, 206, 0.08);
                 border-radius: 4px;
-                border-left: 3px solid #1976D2;
+                border-left: 3px solid #3182ce;
             }
         """)
         header_layout.addWidget(title_label)
@@ -779,17 +793,17 @@ class AIResultPanel(QWidget):
         self.text_edit.setPlaceholderText("AI生成内容将在这里显示...")
         self.text_edit.setStyleSheet("""
             QTextEdit {
-                background: #fafafa;
-                border: 1px solid #e0e0e0;
+                background: #f7fafc;
+                border: 1px solid #e2e8f0;
                 border-radius: 4px;
                 padding: 10px;
-                font-size: 14px;
+                font-size: 17px;
                 line-height: 1.6;
-                color: #333;
-                selection-background-color: #bbdefb;
+                color: #2d3748;
+                selection-background-color: #bee3f8;
             }
             QTextEdit:focus {
-                border-color: #1976D2;
+                border-color: #3182ce;
                 background: white;
             }
         """)

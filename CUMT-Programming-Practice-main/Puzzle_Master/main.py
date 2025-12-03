@@ -2,6 +2,9 @@
 """
 拼图游戏主程序
 趣味拼图游戏 - 支持休闲模式和挑战模式
+
+Version: 2.0.0
+Author: Puzzle Master Team
 """
 
 import sys
@@ -18,6 +21,7 @@ import json
 from game.puzzle_piece import PuzzlePiece
 from game.game_logic import GameLogic
 from ui.leaderboard_window import LeaderboardWindow
+from utils.styles import GameWindowStyles
 
 
 class DifficultySelectionWindow(QDialog):
@@ -409,51 +413,14 @@ class PuzzleGame(QMainWindow):
         self.step_label = None
         self.mode_label = None
         self.original_pixmap = None
+        self.difficulty = 3
 
         self.init_cover()
 
-    def hex_to_rgb(self, hex_color):
-        """十六进制颜色转RGB"""
-        hex_color = hex_color.lstrip('#')
-        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-
-    def darken_color(self, color):
-        """加深颜色"""
-        if color == "#4CAF50":
-            return "#45a049"
-        elif color == "#F18F01":
-            return "#d17a01"
-        elif color == "#2E86AB":
-            return "#287595"
-        elif color == "#A23B72":
-            return "#922e64"
-        else:
-            return color
-
     def style_button(self, button, color):
         """设置按钮样式"""
-        button_font = QFont("Arial", 14, QFont.Bold)
-        button.setFont(button_font)
-        r, g, b = self.hex_to_rgb(color)
-        button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {color};
-                border: none;
-                color: white;
-                padding: 15px 25px;
-                text-align: center;
-                text-decoration: none;
-                font-size: 16px;
-                font-weight: bold;
-                margin: 4px 2px;
-                border-radius: 10px;
-                background-color: rgba({r}, {g}, {b}, 220);
-                min-width: 180px;
-            }}
-            QPushButton:hover {{
-                background-color: rgba({r}, {g}, {b}, 240);
-            }}
-        """)
+        r, g, b = tuple(int(color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+        button.setStyleSheet(GameWindowStyles.MAIN_BUTTON.format(color=color, r=r, g=g, b=b))
         button.setMinimumWidth(200)
 
     def init_cover(self):
@@ -582,7 +549,7 @@ class PuzzleGame(QMainWindow):
         self.timer_label.setFont(font)
         self.step_label.setFont(font)
 
-        label_style = "color: white; padding: 8px 15px; background-color: rgba(0, 0, 0, 150); border-radius: 8px;"
+        label_style = GameWindowStyles.INFO_LABEL
         self.mode_label.setStyleSheet(label_style)
         self.timer_label.setStyleSheet(label_style)
         self.step_label.setStyleSheet(label_style)
@@ -641,30 +608,9 @@ class PuzzleGame(QMainWindow):
         self.reset_btn.setFont(btn_font)
         self.back_btn.setFont(btn_font)
 
-        button_style = """
-            QPushButton {
-                background-color: #4CAF50;
-                border: none;
-                color: white;
-                padding: 12px 24px;
-                text-align: center;
-                text-decoration: none;
-                font-size: 12px;
-                font-weight: bold;
-                margin: 4px 2px;
-                border-radius: 8px;
-                min-width: 120px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-            QPushButton:disabled {
-                background-color: #cccccc;
-            }
-        """
-        self.select_btn.setStyleSheet(button_style)
-        self.reset_btn.setStyleSheet(button_style)
-        self.back_btn.setStyleSheet(button_style.replace("#4CAF50", "#2196F3").replace("#45a049", "#1976D2"))
+        self.select_btn.setStyleSheet(GameWindowStyles.GAME_BUTTON)
+        self.reset_btn.setStyleSheet(GameWindowStyles.GAME_BUTTON)
+        self.back_btn.setStyleSheet(GameWindowStyles.BACK_BUTTON)
 
         btn_layout.addWidget(self.select_btn)
         btn_layout.addWidget(self.reset_btn)
@@ -796,7 +742,7 @@ class PuzzleGame(QMainWindow):
             if result == 1:  # 查看作品
                 self.show_complete_image_with_options()
             elif result == 2:  # 再玩一次
-                self.start_game(self.difficulty)
+                self.start_game(self.n)
             elif result == 3:  # 返回主菜单
                 self.show_main_menu()
 
@@ -910,7 +856,7 @@ class PuzzleGame(QMainWindow):
     def play_again(self):
         """再玩一次"""
         self.hide_completion_ui()
-        self.start_game(self.difficulty)
+        self.start_game(self.n)
 
     def back_to_main_menu(self):
         """返回主菜单"""
@@ -932,19 +878,7 @@ class PuzzleGame(QMainWindow):
         self.complete_image_label.setVisible(False)
         self.grid_container.setVisible(True)
 
-    def show_complete_image(self):
-        """显示完整图片（保留原方法以备其他地方使用）"""
-        if self.original_pixmap:
-            self.grid_container.setVisible(False)
-
-            scaled_pixmap = self.original_pixmap.scaled(
-                self.game_area.size() * 1.2,
-                Qt.KeepAspectRatio,
-                Qt.SmoothTransformation
-            )
-            self.complete_image_label.setPixmap(scaled_pixmap)
-            self.complete_image_label.setVisible(True)
-
+    
     def reset_timer_and_steps(self):
         """重置计时器和步数"""
         self.timer.stop()

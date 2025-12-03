@@ -18,6 +18,8 @@ from PyQt5.QtWidgets import (
     QLabel,
     QWidget,
     QVBoxLayout,
+    QMdiArea,
+    QMdiSubWindow,
 )
 from PyQt5.QtGui import QIcon, QColor, QTextBlockFormat, QFont
 from PyQt5.QtCore import Qt
@@ -39,6 +41,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.current_file_path = None
         self.current_theme = "light"  # 默认主题为浅色
+        self.mdi_area = None
+        self.sub_windows = []  # 存储所有子窗口
+        self.window_counter = 0  # 用于为新窗口编号
         self.init_ui()
 
     def init_ui(self):
@@ -53,15 +58,14 @@ class MainWindow(QMainWindow):
         self.menuBar().setNativeMenuBar(False)
 
         # 创建核心组件
-        self.text_editor = TextEditor(self)
+        self.text_editor = None  # 现在使用MDI子窗口
         self.file_operations = FileOperations(self)
         self.deepseek_client = DeepSeekClient()
 
         # 创建多面板中心区域
         self.setup_central_panes()
 
-        # 确保文本编辑器有正确的颜色设置
-        self.ensure_text_editor_visibility()
+        # MDI区域设置已在setup_central_panes中完成
 
         # 创建并添加工具栏
         self.toolbar = MainToolBar(self)
@@ -85,50 +89,61 @@ class MainWindow(QMainWindow):
 
     def setup_central_panes(self):
         """
-        创建文本编辑区域作为中心
+        创建MDI区域和文本编辑窗口
         """
-        # 文本编辑器作为中心部件
-        self.setCentralWidget(self.text_editor)
+        # 创建MDI区域
+        self.mdi_area = QMdiArea()
+        self.mdi_area.setContentsMargins(0, 2, 0, 0)  # 减少顶部边距
+        self.setCentralWidget(self.mdi_area)
 
-    def ensure_text_editor_visibility(self):
-        """
-        确保文本编辑器有正确的颜色设置
-        """
-        # 强制设置文本编辑器的样式以确保可见性
-        self.text_editor.setStyleSheet("""
-            QTextEdit {
-                background-color: white !important;
-                color: #000000 !important;
-                border: 2px solid #e0e0e0;
-                border-radius: 12px;
-                padding: 20px;
-                font-size: 16px;
-                line-height: 1.8;
-                selection-background-color: #bbdefb;
-                selection-color: #1565C0;
+        # 设置MDI区域的背景颜色和子窗口样式
+        self.mdi_area.setStyleSheet("""
+            QMdiArea {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #f8f9fa, stop:1 #e9ecef);
             }
-            QTextEdit:focus {
+            QMdiSubWindow {
+                background: white;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                margin: 1px;
+            }
+            QMdiSubWindow:focus {
                 border-color: #2196F3;
+                box-shadow: 0 0 0 1px rgba(33, 150, 243, 0.2);
             }
-            QScrollBar:vertical {
-                background: #f5f5f5;
-                width: 12px;
-                border-radius: 6px;
-                margin: 0;
+            QMdiSubWindow:titlebar {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #e2e8f0, stop:1 #cbd5e0);
+                color: #000000;
+                padding: 4px 8px;
+                border-bottom: 1px solid #a0aec0;
+                font-weight: 600;
+                font-size: 13px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
             }
-            QScrollBar::handle:vertical {
-                background: #bdbdbd;
-                border-radius: 6px;
-                min-height: 20px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background: #9e9e9e;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+            QMdiSubWindow::close-button, QMdiSubWindow::maximize-button, QMdiSubWindow::minimize-button {
+                background: transparent;
                 border: none;
-                background: none;
+                border-radius: 3px;
+                padding: 2px;
+                margin: 2px;
+                color: #000000;
+            }
+            QMdiSubWindow::close-button:hover, QMdiSubWindow::maximize-button:hover, QMdiSubWindow::minimize-button:hover {
+                background: #e9ecef;
+                color: #000000;
+            }
+            QMdiSubWindow::close-button:pressed, QMdiSubWindow::maximize-button:pressed, QMdiSubWindow::minimize-button:pressed {
+                background: #ced4da;
             }
         """)
+
+        # 创建第一个文本编辑器窗口
+        self.create_new_text_window("未命名-1")
+
+    # 文本编辑器样式现在通过apply_theme方法管理
 
     def create_menu_bar(self):
         """
@@ -238,6 +253,46 @@ class MainWindow(QMainWindow):
         dark_theme_action.triggered.connect(lambda: self.set_theme("dark"))
         theme_menu.addAction(dark_theme_action)
 
+        # 窗口菜单
+        window_menu = menu_bar.addMenu("窗口")
+
+        # 新建窗口
+        new_window_action = QAction("新建窗口", self)
+        new_window_action.setShortcut("Ctrl+N")
+        new_window_action.triggered.connect(self.new_window)
+        window_menu.addAction(new_window_action)
+
+        # 添加分隔线
+        window_menu.addSeparator()
+
+        # 层叠窗口
+        cascade_action = QAction("层叠窗口", self)
+        cascade_action.triggered.connect(self.cascade_windows)
+        window_menu.addAction(cascade_action)
+
+        # 平铺窗口
+        tile_action = QAction("平铺窗口", self)
+        tile_action.triggered.connect(self.tile_windows)
+        window_menu.addAction(tile_action)
+
+        # 水平平铺
+        tile_horizontal_action = QAction("水平平铺", self)
+        tile_horizontal_action.triggered.connect(self.tile_horizontal)
+        window_menu.addAction(tile_horizontal_action)
+
+        # 垂直平铺
+        tile_vertical_action = QAction("垂直平铺", self)
+        tile_vertical_action.triggered.connect(self.tile_vertical)
+        window_menu.addAction(tile_vertical_action)
+
+        # 添加分隔线
+        window_menu.addSeparator()
+
+        # 关闭所有窗口
+        close_all_action = QAction("关闭所有窗口", self)
+        close_all_action.triggered.connect(self.close_all_windows)
+        window_menu.addAction(close_all_action)
+
     def create_deepseek_dock(self):
         """
         创建DeepSeek功能的停靠窗口，包含控制面板和AI结果展示
@@ -273,7 +328,7 @@ class MainWindow(QMainWindow):
         self.ai_result_panel.apply_theme(self.current_theme)
         self.ai_result_display = self.ai_result_panel.text_edit
         ai_font = self.ai_result_display.font()
-        ai_font.setPointSize(14)  # 设置更大的字体大小，提高可读性
+        ai_font.setPointSize(17)  # 设置更大的字体大小，提高可读性（增大3号）
         self.ai_result_display.setFont(ai_font)
         combined_layout.addWidget(self.ai_result_panel)
 
@@ -321,26 +376,32 @@ class MainWindow(QMainWindow):
         # 连接DeepSeek面板信号
         self.deepseek_panel.connect_signals(self.execute_deepseek_function)
 
-        # 连接文本编辑器内容改变信号
-        self.text_editor.textChanged.connect(self.on_text_changed)
-        self.text_editor.cursorPositionChanged.connect(self.on_cursor_position_changed)
+        # 文本编辑器信号连接现在在create_new_text_window方法中处理
 
     def new_file(self):
         """
         新建文件
         """
-        # 使用文件操作类新建文件
-        self.file_operations.new_file(self.text_editor)
-        self.current_file_path = None
-        self.setWindowTitle("文本编辑器")
-        self.statusBar.showMessage("新建文件")
+        active_editor = self.get_active_editor()
+        if active_editor:
+            # 使用文件操作类新建文件
+            self.file_operations.new_file(active_editor)
+            # 获取当前活动窗口并更新标题
+            active_window = self.mdi_area.activeSubWindow()
+            if active_window:
+                active_window.setWindowTitle("未命名")
+            self.statusBar.showMessage("新建文件")
 
     def open_file(self):
         """
         打开文件
         """
+        active_editor = self.get_active_editor()
+        if not active_editor:
+            return
+
         # 检查是否需要保存当前文件
-        if self.text_editor.document().isModified():
+        if active_editor.document().isModified():
             response = QMessageBox.question(
                 self,
                 "保存",
@@ -355,27 +416,49 @@ class MainWindow(QMainWindow):
                     return
 
         # 使用文件操作类打开文件
-        result = self.file_operations.open_file(self.text_editor)
+        result = self.file_operations.open_file(active_editor)
         if result and self.file_operations.get_current_file_path():
-            self.current_file_path = self.file_operations.get_current_file_path()
-            self.setWindowTitle(f"文本编辑器 - {os.path.basename(self.current_file_path)}")
-            self.statusBar.showMessage(f"已打开文件: {self.current_file_path}")
+            file_path = self.file_operations.get_current_file_path()
+            # 更新当前活动窗口的标题
+            active_window = self.mdi_area.activeSubWindow()
+            if active_window:
+                active_window.setWindowTitle(os.path.basename(file_path))
+            self.statusBar.showMessage(f"已打开文件: {file_path}")
 
     def save_file(self):
         """
         保存文件
         :return: 是否保存成功
         """
-        if self.current_file_path is None:
+        active_editor = self.get_active_editor()
+        if not active_editor:
+            return False
+
+        # 获取当前活动窗口
+        active_window = self.mdi_area.activeSubWindow()
+
+        # 查找对应的文件路径
+        file_path = None
+        if active_window:
+            for window_info in self.sub_windows:
+                if window_info['window'] == active_window:
+                    file_path = window_info['file_path']
+                    break
+
+        if file_path is None:
             return self.save_file_as()
 
         # 使用文件操作类保存文件
-        result = self.file_operations.save_file(self.text_editor)
+        result = self.file_operations.save_file(active_editor, file_path)
         if result:
-            self.current_file_path = self.file_operations.get_current_file_path()
-            if self.current_file_path:
-                self.setWindowTitle(f"文本编辑器 - {os.path.basename(self.current_file_path)}")
-                self.statusBar.showMessage(f"已保存文件: {self.current_file_path}")
+            # 更新窗口信息中的文件路径
+            if active_window:
+                for window_info in self.sub_windows:
+                    if window_info['window'] == active_window:
+                        window_info['file_path'] = file_path
+                        break
+                active_window.setWindowTitle(os.path.basename(file_path))
+            self.statusBar.showMessage(f"已保存文件: {file_path}")
             return True
         else:
             QMessageBox.critical(self, "错误", "保存文件失败")
@@ -386,12 +469,23 @@ class MainWindow(QMainWindow):
         另存为文件
         :return: 是否保存成功
         """
+        active_editor = self.get_active_editor()
+        if not active_editor:
+            return False
+
         # 使用文件操作类另存为文件
-        result = self.file_operations.save_file_as(self.text_editor)
+        result = self.file_operations.save_file_as(active_editor)
         if result and self.file_operations.get_current_file_path():
-            self.current_file_path = self.file_operations.get_current_file_path()
-            self.setWindowTitle(f"文本编辑器 - {os.path.basename(self.current_file_path)}")
-            self.statusBar.showMessage(f"已保存文件: {self.current_file_path}")
+            file_path = self.file_operations.get_current_file_path()
+            # 更新窗口信息中的文件路径
+            active_window = self.mdi_area.activeSubWindow()
+            if active_window:
+                for window_info in self.sub_windows:
+                    if window_info['window'] == active_window:
+                        window_info['file_path'] = file_path
+                        break
+                active_window.setWindowTitle(os.path.basename(file_path))
+            self.statusBar.showMessage(f"已保存文件: {file_path}")
         return result
 
     def change_font(self, font_name):
@@ -399,92 +493,122 @@ class MainWindow(QMainWindow):
         改变字体
         :param font_name: 字体名称
         """
-        self.text_editor.set_text_font(font_name)
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.set_text_font(font_name)
 
     def change_font_size(self, size_str):
         """
         改变字体大小
         :param size_str: 字号字符串
         """
-        self.text_editor.set_text_size(size_str)
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.set_text_size(size_str)
 
     def change_text_color(self):
         """
         改变文本颜色
         """
-        color = QColorDialog.getColor()
-        if color.isValid():
-            self.text_editor.set_text_color(color)
+        active_editor = self.get_active_editor()
+        if active_editor:
+            color = QColorDialog.getColor()
+            if color.isValid():
+                active_editor.set_text_color(color)
 
     def change_first_line_indent(self, indent_type):
         """
         改变首行缩进
         :param indent_type: 缩进类型
         """
-        self.text_editor.set_first_line_indent(indent_type)
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.set_first_line_indent(indent_type)
 
     def change_line_spacing(self, spacing_type):
         """
         改变行间距
         :param spacing_type: 行间距类型
         """
-        self.text_editor.set_line_spacing(spacing_type)
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.set_line_spacing(spacing_type)
 
 
     def align_left(self):
         """
         左对齐
         """
-        self.text_editor.set_alignment(Qt.AlignLeft)
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.set_alignment(Qt.AlignLeft)
 
     def align_center(self):
         """
         居中对齐
         """
-        self.text_editor.set_alignment(Qt.AlignCenter)
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.set_alignment(Qt.AlignCenter)
 
     def align_right(self):
         """
         右对齐
         """
-        self.text_editor.set_alignment(Qt.AlignRight)
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.set_alignment(Qt.AlignRight)
 
     def undo(self):
         """
         撤销操作
         """
-        self.text_editor.undo()
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.undo()
 
     def redo(self):
         """
         重做操作
         """
-        self.text_editor.redo()
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.redo()
 
     def cut(self):
         """
         剪切操作
         """
-        self.text_editor.cut()
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.cut()
 
     def copy(self):
         """
         复制操作
         """
-        self.text_editor.copy()
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.copy()
 
     def paste(self):
         """
         粘贴操作
         """
-        self.text_editor.paste()
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.paste()
 
     def execute_deepseek_function(self):
         """
         执行DeepSeek功能
         """
+        active_editor = self.get_active_editor()
+        if not active_editor:
+            return
+
         function_name = self.deepseek_panel.get_selected_function()
-        current_text = self.text_editor.toPlainText()
+        current_text = active_editor.toPlainText()
 
         if not current_text.strip():
             QMessageBox.warning(self, "警告", "请先输入文本内容")
@@ -511,37 +635,48 @@ class MainWindow(QMainWindow):
         """
         切换粗体状态
         """
-        self.text_editor.set_bold()
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.set_bold()
 
     def toggle_italic(self):
         """
         切换斜体状态
         """
-        self.text_editor.set_italic()
+        active_editor = self.get_active_editor()
+        if active_editor:
+            active_editor.set_italic()
 
     def on_text_changed(self):
         """
         当文本内容改变时的处理函数
         """
-        # 更新窗口标题，添加*表示有未保存的修改
-        if self.text_editor.document().isModified():
-            if self.current_file_path:
-                self.setWindowTitle(f"文本编辑器 - {self.current_file_path} *")
-            else:
-                self.setWindowTitle("文本编辑器 *")
-        else:
-            if self.current_file_path:
-                self.setWindowTitle(f"文本编辑器 - {self.current_file_path}")
-            else:
-                self.setWindowTitle("文本编辑器")
+        active_editor = self.get_active_editor()
+        if not active_editor:
+            return
+
+        # 更新当前活动窗口标题，添加*表示有未保存的修改
+        active_window = self.mdi_area.activeSubWindow()
+        if active_window and active_editor.document().isModified():
+            current_title = active_window.windowTitle()
+            if not current_title.endswith(" *"):
+                active_window.setWindowTitle(current_title + " *")
+        elif active_window and not active_editor.document().isModified():
+            current_title = active_window.windowTitle()
+            if current_title.endswith(" *"):
+                active_window.setWindowTitle(current_title[:-2])
 
     def on_cursor_position_changed(self):
         """
         当光标位置改变时的处理函数
         """
+        active_editor = self.get_active_editor()
+        if not active_editor:
+            return
+
         # 更新粗体和斜体按钮的状态
-        is_bold = self.text_editor.has_bold_format()
-        is_italic = self.text_editor.has_italic_format()
+        is_bold = active_editor.has_bold_format()
+        is_italic = active_editor.has_italic_format()
 
         # 阻止信号以避免递归
         self.toolbar.font_panel.bold_button.blockSignals(True)
@@ -563,7 +698,11 @@ class MainWindow(QMainWindow):
         self.update_cursor_position_label()
 
     def update_cursor_position_label(self):
-        cursor = self.text_editor.textCursor()
+        active_editor = self.get_active_editor()
+        if not active_editor:
+            return
+
+        cursor = active_editor.textCursor()
         line = cursor.blockNumber() + 1
         column = cursor.positionInBlock() + 1
         self.cursor_position_label.setText(f"行 {line} 列 {column}")
@@ -595,45 +734,50 @@ class MainWindow(QMainWindow):
                 }
                 QWidget {
                     background-color: transparent;
-                    color: #212529;
+                    color: #2d3748;
                 }
                 QTextEdit {
                     background-color: white;
-                    color: #212529;
+                    color: #2d3748;
                     border: 1px solid #dee2e6;
                     border-radius: 8px;
                 }
                 QMenuBar {
                     background: white;
-                    color: #212529;
+                    color: #2d3748;
                     border-bottom: 1px solid #dee2e6;
-                    padding: 4px 8px;
-                    font-size: 13px;
+                    padding: 6px 12px;
+                    font-size: 17px;
+                    font-weight: 500;
                 }
                 QMenuBar::item {
                     background: transparent;
-                    padding: 6px 12px;
+                    padding: 8px 16px;
                     border-radius: 4px;
                     margin: 1px;
+                    font-size: 17px;
+                    font-weight: 500;
                 }
                 QMenuBar::item:selected {
-                    background: #e3f2fd;
-                    color: #1976D2;
+                    background: #ebf8ff;
+                    color: #2b6cb0;
                 }
                 QMenu {
                     background-color: white;
-                    color: #212529;
+                    color: #2d3748;
                     border: 1px solid #dee2e6;
                     border-radius: 6px;
                     padding: 4px;
                 }
                 QMenu::item {
-                    padding: 6px 12px;
+                    padding: 8px 16px;
                     border-radius: 4px;
+                    font-size: 16px;
+                    font-weight: 500;
                 }
                 QMenu::item:selected {
-                    background-color: #e3f2fd;
-                    color: #1976D2;
+                    background-color: #ebf8ff;
+                    color: #2b6cb0;
                 }
                 QDockWidget {
                     background-color: white;
@@ -641,13 +785,17 @@ class MainWindow(QMainWindow):
                     border-radius: 8px;
                     font-size: 12px;
                 }
+                QDockWidget:hover {
+                    border-color: #3182ce;
+                    box-shadow: 0 0 0 1px rgba(49, 130, 206, 0.1);
+                }
                 QDockWidget::title {
                     background: #f8f9fa;
-                    color: #495057;
+                    color: #4a5568;
                     padding: 8px 12px;
                     border-bottom: 1px solid #dee2e6;
                     font-weight: 600;
-                    font-size: 12px;
+                    font-size: 13px;
                     border-top-left-radius: 8px;
                     border-top-right-radius: 8px;
                 }
@@ -656,14 +804,15 @@ class MainWindow(QMainWindow):
                     border: none;
                 }
                 QDockWidget::close-button:hover, QDockWidget::float-button:hover {
-                    background: #e9ecef;
+                    background: #e2e8f0;
                     border-radius: 3px;
                 }
                 QStatusBar {
                     background: #f8f9fa;
-                    color: #6c757d;
+                    color: #718096;
                     border-top: 1px solid #dee2e6;
-                    font-size: 11px;
+                    font-size: 12px;
+                    font-weight: 500;
                 }
                 QStatusBar::item {
                     border: none;
@@ -688,36 +837,84 @@ class MainWindow(QMainWindow):
                 }
             """)
             self.ai_result_panel.apply_theme("light")
-            # 重新应用文本编辑器的样式
-            self.ensure_text_editor_visibility()
+            # 对所有窗口应用主题
+            for window_info in self.sub_windows:
+                editor = window_info['editor']
+                if editor:
+                    editor.apply_theme("light")
+
+            # 更新MDI子窗口标题样式
+            self.mdi_area.setStyleSheet("""
+                QMdiArea {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                        stop:0 #f8f9fa, stop:1 #e9ecef);
+                }
+                QMdiSubWindow {
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    margin: 1px;
+                }
+                QMdiSubWindow:focus {
+                    border-color: #2196F3;
+                    box-shadow: 0 0 0 1px rgba(33, 150, 243, 0.2);
+                }
+                QMdiSubWindow:titlebar {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #e2e8f0, stop:1 #cbd5e0);
+                    color: #000000;
+                    padding: 4px 8px;
+                    border-bottom: 1px solid #a0aec0;
+                    font-weight: 600;
+                    font-size: 13px;
+                    border-top-left-radius: 8px;
+                    border-top-right-radius: 8px;
+                }
+                QMdiSubWindow::close-button, QMdiSubWindow::maximize-button, QMdiSubWindow::minimize-button {
+                    background: transparent;
+                    border: none;
+                    border-radius: 3px;
+                    padding: 2px;
+                    margin: 2px;
+                }
+                QMdiSubWindow::close-button:hover, QMdiSubWindow::maximize-button:hover, QMdiSubWindow::minimize-button:hover {
+                    background: #e9ecef;
+                }
+                QMdiSubWindow::close-button:pressed, QMdiSubWindow::maximize-button:pressed, QMdiSubWindow::minimize-button:pressed {
+                    background: #ced4da;
+                }
+            """)
         else:
             # 现代深色主题
             self.setStyleSheet("""
                 QMainWindow {
-                    background: #1a1a1a;
+                    background: #1a202c;
                 }
                 QWidget {
                     background-color: transparent;
-                    color: #e9ecef;
+                    color: #e2e8f0;
                 }
                 QTextEdit {
                     background-color: #2d3748;
-                    color: #e9ecef;
+                    color: #e2e8f0;
                     border: 1px solid #4a5568;
                     border-radius: 8px;
                 }
                 QMenuBar {
                     background: #2d3748;
-                    color: #e9ecef;
+                    color: #e2e8f0;
                     border-bottom: 1px solid #4a5568;
-                    padding: 4px 8px;
-                    font-size: 13px;
+                    padding: 6px 12px;
+                    font-size: 17px;
+                    font-weight: 500;
                 }
                 QMenuBar::item {
                     background: transparent;
-                    padding: 6px 12px;
+                    padding: 8px 16px;
                     border-radius: 4px;
                     margin: 1px;
+                    font-size: 17px;
+                    font-weight: 500;
                 }
                 QMenuBar::item:selected {
                     background: #4a5568;
@@ -725,14 +922,16 @@ class MainWindow(QMainWindow):
                 }
                 QMenu {
                     background-color: #2d3748;
-                    color: #e9ecef;
+                    color: #e2e8f0;
                     border: 1px solid #4a5568;
                     border-radius: 6px;
                     padding: 4px;
                 }
                 QMenu::item {
-                    padding: 6px 12px;
+                    padding: 8px 16px;
                     border-radius: 4px;
+                    font-size: 16px;
+                    font-weight: 500;
                 }
                 QMenu::item:selected {
                     background-color: #4a5568;
@@ -744,13 +943,17 @@ class MainWindow(QMainWindow):
                     border-radius: 8px;
                     font-size: 12px;
                 }
+                QDockWidget:hover {
+                    border-color: #4299e1;
+                    box-shadow: 0 0 0 1px rgba(66, 153, 225, 0.2);
+                }
                 QDockWidget::title {
                     background: #1a202c;
                     color: #90cdf4;
                     padding: 8px 12px;
                     border-bottom: 1px solid #4a5568;
                     font-weight: 600;
-                    font-size: 12px;
+                    font-size: 13px;
                     border-top-left-radius: 8px;
                     border-top-right-radius: 8px;
                 }
@@ -766,7 +969,8 @@ class MainWindow(QMainWindow):
                     background: #1a202c;
                     color: #a0aec0;
                     border-top: 1px solid #4a5568;
-                    font-size: 11px;
+                    font-size: 13px;
+                    font-weight: 500;
                 }
                 QStatusBar::item {
                     border: none;
@@ -791,39 +995,53 @@ class MainWindow(QMainWindow):
                 }
             """)
             self.ai_result_panel.apply_theme("dark")
-            # 重新应用深色主题的文本编辑器样式
-            self.text_editor.setStyleSheet("""
-                QTextEdit {
-                    background-color: #2d3748 !important;
-                    color: #e9ecef !important;
+            # 对所有窗口应用深色主题
+            for window_info in self.sub_windows:
+                editor = window_info['editor']
+                if editor:
+                    editor.apply_theme("dark")
+
+            # 更新MDI子窗口标题样式（深色主题）
+            self.mdi_area.setStyleSheet("""
+                QMdiArea {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                        stop:0 #1a202c, stop:1 #2d3748);
+                }
+                QMdiSubWindow {
+                    background: #2d3748;
                     border: 1px solid #4a5568;
                     border-radius: 8px;
-                    padding: 16px;
-                    font-size: 14px;
-                    line-height: 1.6;
-                    selection-background-color: #4a5568;
-                    selection-color: #90cdf4;
+                    margin: 1px;
                 }
-                QTextEdit:focus {
-                    border-color: #63b3ed;
+                QMdiSubWindow:focus {
+                    border-color: #4299e1;
+                    box-shadow: 0 0 0 1px rgba(66, 153, 225, 0.2);
                 }
-                QScrollBar:vertical {
-                    background: #4a5568;
-                    width: 10px;
-                    border-radius: 5px;
-                    margin: 0;
+                QMdiSubWindow:titlebar {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #4a5568, stop:1 #2d3748);
+                    color: #f7fafc;
+                    padding: 4px 8px;
+                    border-bottom: 1px solid #718096;
+                    font-weight: 600;
+                    font-size: 13px;
+                    border-top-left-radius: 8px;
+                    border-top-right-radius: 8px;
                 }
-                QScrollBar::handle:vertical {
-                    background: #718096;
-                    border-radius: 5px;
-                    min-height: 15px;
-                }
-                QScrollBar::handle:vertical:hover {
-                    background: #a0aec0;
-                }
-                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                QMdiSubWindow::close-button, QMdiSubWindow::maximize-button, QMdiSubWindow::minimize-button {
+                    background: transparent;
                     border: none;
-                    background: none;
+                    border-radius: 3px;
+                    padding: 2px;
+                    margin: 2px;
+                    color: #f7fafc;
+                }
+                QMdiSubWindow::close-button:hover, QMdiSubWindow::maximize-button:hover, QMdiSubWindow::minimize-button:hover {
+                    background: #718096;
+                    color: #f7fafc;
+                }
+                QMdiSubWindow::close-button:pressed, QMdiSubWindow::maximize-button:pressed, QMdiSubWindow::minimize-button:pressed {
+                    background: #4a5568;
                 }
             """)
 
@@ -832,12 +1050,18 @@ class MainWindow(QMainWindow):
         关闭窗口时的事件处理
         :param event: 事件对象
         """
-        # 检查是否需要保存当前文件
-        if self.text_editor.document().isModified():
+        # 检查所有窗口是否有未保存的更改
+        unsaved_windows = []
+        for window_info in self.sub_windows:
+            editor = window_info['editor']
+            if editor and editor.document().isModified():
+                unsaved_windows.append(window_info)
+
+        if unsaved_windows:
             response = QMessageBox.question(
                 self,
                 "保存",
-                "是否保存当前文件？",
+                f"有 {len(unsaved_windows)} 个窗口包含未保存的更改，是否保存？",
                 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel
             )
 
@@ -845,8 +1069,269 @@ class MainWindow(QMainWindow):
                 event.ignore()
                 return
             elif response == QMessageBox.Yes:
-                if not self.save_file():
-                    event.ignore()
-                    return
+                # 保存所有未保存的窗口
+                for window_info in unsaved_windows:
+                    # 设置为活动窗口并保存
+                    self.mdi_area.setActiveSubWindow(window_info['window'])
+                    if not self.save_file():
+                        event.ignore()
+                        return
 
         event.accept()
+
+    def create_new_text_window(self, title=None):
+        """
+        创建新的文本编辑器窗口
+        :param title: 窗口标题，如果为None则自动生成
+        """
+        if title is None:
+            self.window_counter += 1
+            title = f"未命名-{self.window_counter}"
+
+        # 创建新的文本编辑器实例
+        new_text_editor = TextEditor(self)
+        new_text_editor.apply_theme(self.current_theme)
+
+        # 创建MDI子窗口
+        sub_window = QMdiSubWindow()
+        sub_window.setWidget(new_text_editor)
+        sub_window.setWindowTitle(title)
+        sub_window.resize(600, 400)
+
+        # 将子窗口添加到MDI区域
+        self.mdi_area.addSubWindow(sub_window)
+
+        # 立即应用当前主题的MDI窗口样式
+        self.apply_mdi_window_theme()
+
+        # 存储窗口信息
+        self.sub_windows.append({
+            'window': sub_window,
+            'editor': new_text_editor,
+            'title': title,
+            'file_path': None
+        })
+
+        # 连接信号
+        new_text_editor.textChanged.connect(self.on_text_changed)
+        new_text_editor.cursorPositionChanged.connect(self.on_cursor_position_changed)
+
+        # 显示窗口
+        sub_window.show()
+
+        # 设置为活动窗口
+        self.mdi_area.setActiveSubWindow(sub_window)
+
+        return sub_window
+
+    def apply_mdi_window_theme(self):
+        """
+        应用MDI窗口的主题样式
+        """
+        if self.current_theme == "light":
+            # 浅色主题MDI窗口样式
+            mdi_style = """
+                QMdiArea {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                        stop:0 #f8f9fa, stop:1 #e9ecef);
+                }
+                QMdiSubWindow {
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    margin: 1px;
+                }
+                QMdiSubWindow:focus {
+                    border-color: #2196F3;
+                    box-shadow: 0 0 0 1px rgba(33, 150, 243, 0.2);
+                }
+                QMdiSubWindow:titlebar {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #e2e8f0, stop:1 #cbd5e0);
+                    color: #000000;
+                    padding: 4px 8px;
+                    border-bottom: 1px solid #a0aec0;
+                    font-weight: 600;
+                    font-size: 13px;
+                    border-top-left-radius: 8px;
+                    border-top-right-radius: 8px;
+                }
+                QMdiSubWindow::close-button, QMdiSubWindow::maximize-button, QMdiSubWindow::minimize-button {
+                    background: transparent;
+                    border: none;
+                    border-radius: 3px;
+                    padding: 2px;
+                    margin: 2px;
+                    color: #1a202c;
+                }
+                QMdiSubWindow::close-button:hover, QMdiSubWindow::maximize-button:hover, QMdiSubWindow::minimize-button:hover {
+                    background: #e9ecef;
+                    color: #1a202c;
+                }
+                QMdiSubWindow::close-button:pressed, QMdiSubWindow::maximize-button:pressed, QMdiSubWindow::minimize-button:pressed {
+                    background: #ced4da;
+                }
+            """
+        else:
+            # 深色主题MDI窗口样式
+            mdi_style = """
+                QMdiArea {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                        stop:0 #1a202c, stop:1 #2d3748);
+                }
+                QMdiSubWindow {
+                    background: #2d3748;
+                    border: 1px solid #4a5568;
+                    border-radius: 8px;
+                    margin: 1px;
+                }
+                QMdiSubWindow:focus {
+                    border-color: #4299e1;
+                    box-shadow: 0 0 0 1px rgba(66, 153, 225, 0.2);
+                }
+                QMdiSubWindow:titlebar {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #4a5568, stop:1 #2d3748);
+                    color: #f7fafc;
+                    padding: 4px 8px;
+                    border-bottom: 1px solid #718096;
+                    font-weight: 600;
+                    font-size: 13px;
+                    border-top-left-radius: 8px;
+                    border-top-right-radius: 8px;
+                }
+                QMdiSubWindow::close-button, QMdiSubWindow::maximize-button, QMdiSubWindow::minimize-button {
+                    background: transparent;
+                    border: none;
+                    border-radius: 3px;
+                    padding: 2px;
+                    margin: 2px;
+                    color: #f7fafc;
+                }
+                QMdiSubWindow::close-button:hover, QMdiSubWindow::maximize-button:hover, QMdiSubWindow::minimize-button:hover {
+                    background: #718096;
+                    color: #f7fafc;
+                }
+                QMdiSubWindow::close-button:pressed, QMdiSubWindow::maximize-button:pressed, QMdiSubWindow::minimize-button:pressed {
+                    background: #4a5568;
+                }
+            """
+
+        self.mdi_area.setStyleSheet(mdi_style)
+
+    def new_window(self):
+        """
+        新建窗口
+        """
+        self.window_counter += 1
+        self.create_new_text_window(f"未命名-{self.window_counter}")
+        self.statusBar.showMessage(f"新建窗口: 未命名-{self.window_counter}")
+
+    def cascade_windows(self):
+        """
+        层叠窗口
+        """
+        self.mdi_area.cascadeSubWindows()
+        self.statusBar.showMessage("窗口已层叠")
+
+    def tile_windows(self):
+        """
+        平铺窗口
+        """
+        self.mdi_area.tileSubWindows()
+        self.statusBar.showMessage("窗口已平铺")
+
+    def tile_horizontal(self):
+        """
+        水平平铺窗口
+        """
+        if not self.sub_windows:
+            return
+
+        # 获取MDI区域的尺寸
+        mdi_rect = self.mdi_area.rect()
+        window_width = mdi_rect.width() // len(self.sub_windows)
+        window_height = mdi_rect.height()
+
+        for i, window_info in enumerate(self.sub_windows):
+            window = window_info['window']
+            if window and not window.isClosed():
+                window.resize(window_width, window_height)
+                window.move(i * window_width, 0)
+
+        self.statusBar.showMessage("窗口已水平平铺")
+
+    def tile_vertical(self):
+        """
+        垂直平铺窗口
+        """
+        if not self.sub_windows:
+            return
+
+        # 获取MDI区域的尺寸
+        mdi_rect = self.mdi_area.rect()
+        window_width = mdi_rect.width()
+        window_height = mdi_rect.height() // len(self.sub_windows)
+
+        for i, window_info in enumerate(self.sub_windows):
+            window = window_info['window']
+            if window and not window.isClosed():
+                window.resize(window_width, window_height)
+                window.move(0, i * window_height)
+
+        self.statusBar.showMessage("窗口已垂直平铺")
+
+    def close_all_windows(self):
+        """
+        关闭所有窗口（除了第一个）
+        """
+        if len(self.sub_windows) <= 1:
+            return
+
+        # 检查是否有未保存的文件
+        unsaved_count = 0
+        for window_info in self.sub_windows[1:]:
+            editor = window_info['editor']
+            if editor and editor.document().isModified():
+                unsaved_count += 1
+
+        if unsaved_count > 0:
+            response = QMessageBox.question(
+                self,
+                "保存文件",
+                f"有 {unsaved_count} 个窗口包含未保存的更改，是否保存？",
+                QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel
+            )
+
+            if response == QMessageBox.Cancel:
+                return
+            elif response == QMessageBox.Yes:
+                # 这里可以添加保存逻辑
+                pass
+
+        # 关闭除第一个窗口外的所有窗口
+        for window_info in self.sub_windows[1:]:
+            window = window_info['window']
+            if window and not window.isClosed():
+                window.close()
+
+        # 清理已关闭的窗口信息
+        self.sub_windows = [w for w in self.sub_windows if w['window'] and not w['window'].isClosed()]
+
+        self.statusBar.showMessage("已关闭其他窗口")
+
+    def get_active_editor(self):
+        """
+        获取当前活动的文本编辑器
+        """
+        active_window = self.mdi_area.activeSubWindow()
+        if active_window:
+            for window_info in self.sub_windows:
+                if window_info['window'] == active_window:
+                    return window_info['editor']
+
+        # 如果没有活动窗口，返回第一个编辑器
+        if self.sub_windows:
+            return self.sub_windows[0]['editor']
+
+        return None

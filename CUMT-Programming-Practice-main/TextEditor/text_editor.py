@@ -52,32 +52,33 @@ class TextEditor(QTextEdit):
         # 设置现代化样式
         self.setStyleSheet("""
             QTextEdit {
-                background: white;
-                border: 2px solid #e0e0e0;
-                border-radius: 12px;
+                background: #ffffff;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
                 padding: 20px;
                 font-size: 16px;
                 line-height: 1.8;
-                color: #212121;
-                selection-background-color: #bbdefb;
-                selection-color: #1565C0;
+                color: #2d3748;
+                selection-background-color: #3182ce;
+                selection-color: #ffffff;
             }
             QTextEdit:focus {
-                border-color: #2196F3;
+                border-color: #3182ce;
+                box-shadow: 0 0 0 1px rgba(49, 130, 206, 0.1);
             }
             QScrollBar:vertical {
-                background: #f5f5f5;
+                background: #f7fafc;
                 width: 12px;
                 border-radius: 6px;
                 margin: 0;
             }
             QScrollBar::handle:vertical {
-                background: #bdbdbd;
+                background: #cbd5e0;
                 border-radius: 6px;
                 min-height: 20px;
             }
             QScrollBar::handle:vertical:hover {
-                background: #9e9e9e;
+                background: #a0aec0;
             }
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
                 border: none;
@@ -363,6 +364,84 @@ class TextEditor(QTextEdit):
         if not has_selection:
             cursor.clearSelection()
             self.setTextCursor(cursor)
+
+    def apply_theme(self, theme):
+        """
+        应用主题到文本编辑器
+        :param theme: 主题名称 ("light" 或 "dark")
+        """
+        if theme == "light":
+            self.setStyleSheet("""
+                QTextEdit {
+                    background-color: #ffffff !important;
+                    color: #2d3748 !important;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    padding: 20px;
+                    font-size: 16px;
+                    line-height: 1.8;
+                    selection-background-color: #3182ce;
+                    selection-color: #ffffff;
+                }
+                QTextEdit:focus {
+                    border-color: #3182ce;
+                    box-shadow: 0 0 0 1px rgba(49, 130, 206, 0.1);
+                }
+                QScrollBar:vertical {
+                    background: #f7fafc;
+                    width: 12px;
+                    border-radius: 6px;
+                    margin: 0;
+                }
+                QScrollBar::handle:vertical {
+                    background: #cbd5e0;
+                    border-radius: 6px;
+                    min-height: 20px;
+                }
+                QScrollBar::handle:vertical:hover {
+                    background: #a0aec0;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    border: none;
+                    background: none;
+                }
+            """)
+        else:  # dark theme
+            self.setStyleSheet("""
+                QTextEdit {
+                    background-color: #1a202c !important;
+                    color: #e2e8f0 !important;
+                    border: 1px solid #4a5568;
+                    border-radius: 8px;
+                    padding: 16px;
+                    font-size: 14px;
+                    line-height: 1.6;
+                    selection-background-color: #4299e1;
+                    selection-color: #ffffff;
+                }
+                QTextEdit:focus {
+                    border-color: #4299e1;
+                    box-shadow: 0 0 0 1px rgba(66, 153, 225, 0.2);
+                }
+                QScrollBar:vertical {
+                    background: #2d3748;
+                    width: 10px;
+                    border-radius: 5px;
+                    margin: 0;
+                }
+                QScrollBar::handle:vertical {
+                    background: #4a5568;
+                    border-radius: 5px;
+                    min-height: 15px;
+                }
+                QScrollBar::handle:vertical:hover {
+                    background: #718096;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    border: none;
+                    background: none;
+                }
+            """)
     
     def set_italic(self):
         """
@@ -389,6 +468,84 @@ class TextEditor(QTextEdit):
             cursor.clearSelection()
             self.setTextCursor(cursor)
 
+    def apply_theme(self, theme):
+        """
+        应用主题到文本编辑器
+        :param theme: 主题名称 ("light" 或 "dark")
+        """
+        if theme == "light":
+            self.setStyleSheet("""
+                QTextEdit {
+                    background-color: #ffffff !important;
+                    color: #2d3748 !important;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    padding: 20px;
+                    font-size: 16px;
+                    line-height: 1.8;
+                    selection-background-color: #3182ce;
+                    selection-color: #ffffff;
+                }
+                QTextEdit:focus {
+                    border-color: #3182ce;
+                    box-shadow: 0 0 0 1px rgba(49, 130, 206, 0.1);
+                }
+                QScrollBar:vertical {
+                    background: #f7fafc;
+                    width: 12px;
+                    border-radius: 6px;
+                    margin: 0;
+                }
+                QScrollBar::handle:vertical {
+                    background: #cbd5e0;
+                    border-radius: 6px;
+                    min-height: 20px;
+                }
+                QScrollBar::handle:vertical:hover {
+                    background: #a0aec0;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    border: none;
+                    background: none;
+                }
+            """)
+        else:  # dark theme
+            self.setStyleSheet("""
+                QTextEdit {
+                    background-color: #1a202c !important;
+                    color: #e2e8f0 !important;
+                    border: 1px solid #4a5568;
+                    border-radius: 8px;
+                    padding: 16px;
+                    font-size: 14px;
+                    line-height: 1.6;
+                    selection-background-color: #4299e1;
+                    selection-color: #ffffff;
+                }
+                QTextEdit:focus {
+                    border-color: #4299e1;
+                    box-shadow: 0 0 0 1px rgba(66, 153, 225, 0.2);
+                }
+                QScrollBar:vertical {
+                    background: #2d3748;
+                    width: 10px;
+                    border-radius: 5px;
+                    margin: 0;
+                }
+                QScrollBar::handle:vertical {
+                    background: #4a5568;
+                    border-radius: 5px;
+                    min-height: 15px;
+                }
+                QScrollBar::handle:vertical:hover {
+                    background: #718096;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    border: none;
+                    background: none;
+                }
+            """)
+
     def set_underline(self):
         """
         设置选中文字为下划线
@@ -413,3 +570,81 @@ class TextEditor(QTextEdit):
         if not has_selection:
             cursor.clearSelection()
             self.setTextCursor(cursor)
+
+    def apply_theme(self, theme):
+        """
+        应用主题到文本编辑器
+        :param theme: 主题名称 ("light" 或 "dark")
+        """
+        if theme == "light":
+            self.setStyleSheet("""
+                QTextEdit {
+                    background-color: #ffffff !important;
+                    color: #2d3748 !important;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    padding: 20px;
+                    font-size: 16px;
+                    line-height: 1.8;
+                    selection-background-color: #3182ce;
+                    selection-color: #ffffff;
+                }
+                QTextEdit:focus {
+                    border-color: #3182ce;
+                    box-shadow: 0 0 0 1px rgba(49, 130, 206, 0.1);
+                }
+                QScrollBar:vertical {
+                    background: #f7fafc;
+                    width: 12px;
+                    border-radius: 6px;
+                    margin: 0;
+                }
+                QScrollBar::handle:vertical {
+                    background: #cbd5e0;
+                    border-radius: 6px;
+                    min-height: 20px;
+                }
+                QScrollBar::handle:vertical:hover {
+                    background: #a0aec0;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    border: none;
+                    background: none;
+                }
+            """)
+        else:  # dark theme
+            self.setStyleSheet("""
+                QTextEdit {
+                    background-color: #1a202c !important;
+                    color: #e2e8f0 !important;
+                    border: 1px solid #4a5568;
+                    border-radius: 8px;
+                    padding: 16px;
+                    font-size: 14px;
+                    line-height: 1.6;
+                    selection-background-color: #4299e1;
+                    selection-color: #ffffff;
+                }
+                QTextEdit:focus {
+                    border-color: #4299e1;
+                    box-shadow: 0 0 0 1px rgba(66, 153, 225, 0.2);
+                }
+                QScrollBar:vertical {
+                    background: #2d3748;
+                    width: 10px;
+                    border-radius: 5px;
+                    margin: 0;
+                }
+                QScrollBar::handle:vertical {
+                    background: #4a5568;
+                    border-radius: 5px;
+                    min-height: 15px;
+                }
+                QScrollBar::handle:vertical:hover {
+                    background: #718096;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    border: none;
+                    background: none;
+                }
+            """)
