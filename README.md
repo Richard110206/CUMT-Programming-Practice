@@ -1,5 +1,13 @@
 # CUMT编程实践项目集合 🎯
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python Version">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Platform">
+  <img src="https://img.shields.io/badge/Status-Active-brightgreen.svg" alt="Status">
+  <img src="https://img.shields.io/badge/Project-Educational%20Final-orange.svg" alt="Project Type">
+</p>
+
 > 中国矿业大学编程实践课程项目集合，包含多个实用工具和趣味应用
 
 ## 📁 项目结构
@@ -16,6 +24,12 @@ CUMT-Programming-Practice/
 ## 🚀 项目列表
 
 ### 🧮 多功能计算器 (myCalculator)
+<p>
+  <img src="https://img.shields.io/badge/Framework-Tkinter-8dd2f7.svg" alt="Tkinter">
+  <img src="https://img.shields.io/badge/Features-Multi--functional-ff69b4.svg" alt="Features">
+  <img src="https://img.shields.io/badge/Status-Complete-success.svg" alt="Status">
+</p>
+
 一个功能丰富的计算器应用，支持：
 - 基础四则运算
 - 高级数学函数
@@ -27,6 +41,13 @@ CUMT-Programming-Practice/
 **技术栈**: Python, Tkinter
 
 ### 🎮 趣味拼图游戏 (Puzzle_Master)
+<p>
+  <img src="https://img.shields.io/badge/Framework-PyQt5-41cd52.svg" alt="PyQt5">
+  <img src="https://img.shields.io/badge/Game-Mode-Multiple-9cf.svg" alt="Game Mode">
+  <img src="https://img.shields.io/badge/Difficulty-2x2--to--6x6-fd7e14.svg" alt="Difficulty">
+  <img src="https://img.shields.io/badge/Features-Leaderboard-e83e8c.svg" alt="Features">
+</p>
+
 支持多种游戏模式的拼图游戏：
 - 休闲模式：自由选择难度
 - 挑战模式：计时计步排行榜
@@ -36,6 +57,13 @@ CUMT-Programming-Practice/
 **技术栈**: Python, PyQt5
 
 ### 📝 智能文本编辑器 (TextEditor)
+<p>
+  <img src="https://img.shields.io/badge/Framework-Tkinter-8dd2f7.svg" alt="Tkinter">
+  <img src="https://img.shields.io/badge/AI-Integrated-007bff.svg" alt="AI Integration">
+  <img src="https://img.shields.io/badge/Features-Syntax%20Highlighting-28a745.svg" alt="Features">
+  <img src="https://img.shields.io/badge/Interface-Multi--tab-ffc107.svg" alt="Interface">
+</p>
+
 功能完整的文本编辑器：
 - 语法高亮
 - 智能AI助手集成
@@ -123,3 +151,17 @@ python main_window.py
 ---
 
 ⭐ 如果这个项目对你有帮助，请给个 Star！
+
+---
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg?style=flat-square" alt="Contributions Welcome">
+  <img src="https://img.shields.io/badge/Forks-0-lightgrey.svg?style=flat-square" alt="Forks">
+  <img src="https://img.shields.io/badge/Stars-0-yellow.svg?style=flat-square" alt="Stars">
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License">
+  <img src="https://img.shields.io/badge/Made%20with-Python-red.svg?style=flat-square" alt="Made with Python">
+</p>
+
+<p align="center">
+  <a href="#top">回到顶部 🔝</a>
+</p>
